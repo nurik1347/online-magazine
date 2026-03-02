@@ -18,9 +18,9 @@ const form = ref({
 });
 
 const categories = ref([]);
-const currentImages = ref([]); // mavjud rasmlar (to‘liq URL lar)
-const selectedFiles = ref([]); // yangi tanlangan fayllar
-const previewImages = ref([]); // yangi rasmlarning preview
+const currentImages = ref([]); 
+const selectedFiles = ref([]); 
+const previewImages = ref([]); 
 const maxImages = 10;
 const loading = ref(true);
 const submitting = ref(false);
@@ -28,7 +28,6 @@ const errorMessage = ref('');
 
 onMounted(async () => {
   try {
-    // 1. Mahsulot ma'lumotlarini yuklash
     const productRes = await api.get(`/api/products/${productId}`);
     if (productRes.data.success) {
       const prod = productRes.data.data;
@@ -44,7 +43,6 @@ onMounted(async () => {
       currentImages.value = prod.images || [];
     }
 
-    // 2. Kategoriyalarni yuklash
     const catRes = await api.get('/api/categories');
     if (catRes.data.success && catRes.data.data?.categories) {
       categories.value = catRes.data.data.categories;
@@ -101,7 +99,6 @@ async function submitEdit() {
   try {
     let updatedImages = [...currentImages.value];
 
-    // Yangi rasmlarni yuklash (agar tanlangan bo‘lsa)
     if (selectedFiles.value.length > 0) {
       const formData = new FormData();
       selectedFiles.value.forEach(file => {
@@ -117,7 +114,6 @@ async function submitEdit() {
       }
     }
 
-    // Mahsulotni yangilash
     const payload = {
       title: form.value.title.trim(),
       description: form.value.description.trim(),
@@ -126,7 +122,7 @@ async function submitEdit() {
       currency: form.value.currency,
       categoryId: form.value.categoryId,
       brand: form.value.brand.trim() || undefined,
-      images: updatedImages // faqat to‘liq URL lar
+      images: updatedImages 
     };
 
     const updateRes = await api.put(`/api/products/${productId}`, payload);
@@ -178,19 +174,16 @@ function goBack() {
       </div>
 
       <form @submit.prevent="submitEdit" class="edit-form">
-        <!-- Sarlavha -->
         <div class="form-group">
           <label>Sarlavha *</label>
           <input v-model="form.title" type="text" class="form-control" required />
         </div>
 
-        <!-- Tavsif -->
         <div class="form-group">
           <label>Tavsif</label>
           <textarea v-model="form.description" class="form-control" rows="4"></textarea>
         </div>
 
-        <!-- Narx -->
         <div class="row">
           <div class="col-md-6 form-group">
             <label>Narx *</label>
@@ -202,7 +195,6 @@ function goBack() {
           </div>
         </div>
 
-        <!-- Valyuta -->
         <div class="form-group">
           <label>Valyuta *</label>
           <select v-model="form.currency" class="form-control" required>
@@ -213,7 +205,6 @@ function goBack() {
           </select>
         </div>
 
-        <!-- Kategoriya -->
         <div class="form-group">
           <label>Kategoriya *</label>
           <select v-model="form.categoryId" class="form-control" required>
@@ -224,17 +215,14 @@ function goBack() {
           </select>
         </div>
 
-        <!-- Brend -->
         <div class="form-group">
           <label>Brend</label>
           <input v-model="form.brand" type="text" class="form-control" />
         </div>
 
-        <!-- Rasm yuklash -->
         <div class="form-group">
           <label>Rasmlar ({{ currentImages.length + previewImages.length }} / {{ maxImages }})</label>
           
-          <!-- Mavjud rasmlar -->
           <div v-if="currentImages.length" class="current-images-grid">
             <div v-for="(img, idx) in currentImages" :key="idx" class="image-preview">
               <img :src="img" alt="Current image" />
@@ -244,7 +232,6 @@ function goBack() {
             </div>
           </div>
 
-          <!-- Yangi rasmlar preview -->
           <div v-if="previewImages.length" class="preview-grid">
             <div v-for="(prev, idx) in previewImages" :key="idx" class="image-preview">
               <img :src="prev.url" :alt="prev.name" />
@@ -269,7 +256,6 @@ function goBack() {
           </label>
         </div>
 
-        <!-- Tugmalar -->
         <div class="form-actions">
           <button type="submit" class="btn btn-save" :disabled="submitting">
             <span v-if="submitting">Saqlanmoqda...</span>

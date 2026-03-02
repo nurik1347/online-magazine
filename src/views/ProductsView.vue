@@ -281,14 +281,12 @@ function getImageUrl(image) {
   font-size: 1.1rem;
 }
 
-/* Grid */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.75rem;
 }
 
-/* Card */
 .product-card {
   background: white;
   border-radius: 16px;
@@ -304,11 +302,10 @@ function getImageUrl(image) {
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
 }
 
-/* Image + Carousel */
 .card-image {
   position: relative;
   width: 100%;
-  padding-top: 100%; /* 1:1 */
+  padding-top: 100%;
   background: #f8f9fa;
 }
 
@@ -330,7 +327,6 @@ function getImageUrl(image) {
   transform: scale(1.07);
 }
 
-/* Swiper controls */
 :deep(.swiper-button-next),
 :deep(.swiper-button-prev) {
   color: white !important;
@@ -356,7 +352,6 @@ function getImageUrl(image) {
   opacity: 1;
 }
 
-/* Badges */
 .card-badges {
   position: absolute;
   top: 12px;

@@ -21,7 +21,6 @@
       </div>
 
       <form @submit.prevent="createUser" class="admin-form">
-        <!-- Username -->
         <div class="form-group">
           <label for="username">Username <span class="required">*</span></label>
           <input
@@ -34,7 +33,6 @@
           />
         </div>
 
-        <!-- Email -->
         <div class="form-group">
           <label for="email">Email <span class="required">*</span></label>
           <input
@@ -47,7 +45,6 @@
           />
         </div>
 
-        <!-- Firstname -->
         <div class="form-group">
           <label for="firstname">Ism <span class="required">*</span></label>
           <input
@@ -60,7 +57,6 @@
           />
         </div>
 
-        <!-- Name (Familiya) -->
         <div class="form-group">
           <label for="name">Familiya <span class="required">*</span></label>
           <input
@@ -72,8 +68,6 @@
             required
           />
         </div>
-
-        <!-- Phone -->
         <div class="form-group">
           <label for="phone">Telefon raqami</label>
           <input
@@ -85,7 +79,6 @@
           />
         </div>
 
-        <!-- Password -->
         <div class="form-group">
           <label for="password">Parol <span class="required">*</span></label>
           <input
@@ -98,7 +91,6 @@
           />
         </div>
 
-        <!-- Role tanlash -->
         <div class="form-group">
           <label>Rol tanlang <span class="required">*</span></label>
           <div class="role-options">
@@ -127,7 +119,6 @@
           </div>
         </div>
 
-        <!-- Status -->
         <div class="form-group">
           <label for="status">Status</label>
           <select id="status" v-model="form.status" class="form-control">
@@ -136,7 +127,6 @@
           </select>
         </div>
 
-        <!-- Tugmalar -->
         <div class="form-actions">
           <button
             type="submit"
@@ -162,7 +152,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../services/api';
-// import DashboardLayout from '@/layouts/DashboardLayout.vue'; // ← yo‘lingizga moslashtiring
+// import DashboardLayout from '@/layouts/DashboardLayout.vue';
 
 const router = useRouter();
 
@@ -173,7 +163,7 @@ const form = ref({
   name: '',
   phone: '',
   password: '',
-  role: 'admin', // default qiymat
+  role: 'admin', 
   status: 'active'
 });
 
@@ -181,7 +171,6 @@ const submitting = ref(false);
 const errorMessage = ref('');
 
 async function createUser() {
-  // Majburiy maydonlarni tekshirish
   if (!form.value.username || !form.value.email || !form.value.firstname ||
       !form.value.name || !form.value.password || !form.value.role) {
     alert('Majburiy maydonlarni to‘ldiring: Username, Email, Ism, Familiya, Parol, Rol');
@@ -200,10 +189,9 @@ async function createUser() {
       phone: form.value.phone.trim() || undefined,
       password: form.value.password,
       status: form.value.status,
-      role: form.value.role // "admin" yoki "user"
+      role: form.value.role
     };
 
-    // Rolga qarab endpoint tanlash
     let endpoint = '/api/admins';
     if (form.value.role === 'user') {
       endpoint = '/api/users';
@@ -213,7 +201,7 @@ async function createUser() {
 
     if (res.data.success) {
       alert(`Yangi ${form.value.role.toUpperCase()} muvaffaqiyatli qo'shildi!`);
-      router.push('/admins'); // yoki kerak bo'lsa /users ga o'tkazish mumkin
+      router.push('/admins'); 
     } else {
       errorMessage.value = res.data.message || 'Foydalanuvchi qo‘shishda xatolik';
     }

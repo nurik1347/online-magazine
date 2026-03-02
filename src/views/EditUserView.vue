@@ -77,12 +77,12 @@ const form = ref({
   phone: '',
   address: '',
   remark: '',
-  password: '', // yangi parol uchun (bo'sh bo'lsa o'zgarmaydi)
+  password: '', 
   status: 'active'
 })
 
 onMounted(async () => {
-  const userId = route.params.id // URL dan id olish (masalan /users/:id/edit)
+  const userId = route.params.id 
   if (!userId) return router.push('/users')
 
   try {
@@ -111,7 +111,7 @@ const handleUpdate = async () => {
 
   try {
     const payload = { ...form.value }
-    if (!payload.password) delete payload.password // parol o'zgarmasa yubormaymiz
+    if (!payload.password) delete payload.password
 
     await api.put(`/api/users/${userId}`, payload)
     alert('User yangilandi!')

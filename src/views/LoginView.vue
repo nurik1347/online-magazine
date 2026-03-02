@@ -5,7 +5,7 @@
                 <img src="/logo.png" alt="SPECIFIC" class="logo">
                 <h1>Welcome to Location Panel</h1>
             </div>
-            <div class="error" v-if="authStore.error">  <!-- ✅ TUZATILDI -->
+            <div class="error" v-if="authStore.error"> 
                 {{ authStore.error }}
             </div>
             <form @submit.prevent="handleLogin">
@@ -18,7 +18,7 @@
                     <input type="password" v-model="form.password" placeholder="Enter Password" required />
                 </div>
                 <button type="submit" class="login-btn" :disabled="authStore.loading">
-                    {{ authStore.loading ? 'Loading...' : 'Login' }}  <!-- ✅ TUZATILDI -->
+                    {{ authStore.loading ? 'Loading...' : 'Login' }} 
                 </button>
             </form>
             <p class="register-link">Don't have an account? <router-link to="/register">Register</router-link></p>

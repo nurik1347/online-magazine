@@ -62,14 +62,12 @@ async function uploadImages() {
     });
 
     try {
-        // 1. Rasmlarni yuklash
         const uploadRes = await api.post('/api/uploads/images', formData);
 
         if (!uploadRes.data.success) {
             throw new Error('Yuklash muvaffaqiyatsiz');
         }
 
-        // 2. Faqat to‘liq URL larni olish (data.urls dan)
         const newImageUrls = uploadRes.data.data?.urls || [];
 
         if (!newImageUrls.length) {
@@ -77,29 +75,16 @@ async function uploadImages() {
             return;
         }
 
-        // 3. Eski rasmlarni saqlash yoki almashtirish
-        // Agar faqat yangi rasmlar bilan almashtirish kerak bo‘lsa:
-        const updatedImages = newImageUrls;  // ← faqat yangi URL lar
+        const updatedImages = newImageUrls;
 
-        // Agar eski rasmlarni saqlab qolish kerak bo‘lsa:
-        // const updatedImages = [...(product.value?.images || []), ...newImageUrls];
 
-        // 4. Mahsulotni yangilash — faqat to‘liq URL larni yuboramiz
         const updateRes = await api.put(`/api/products/${productId}`, {
             images: updatedImages
-            // Agar backend boshqa maydonlarni majburiy qilsa, qo‘shing:
-            // title: product.value.title,
-            // description: product.value.description || '',
-            // price: product.value.price,
-            // currency: product.value.currency || 'USD',
-            // brand: product.value.brand || '',
-            // ...
         });
 
         if (updateRes.data.success) {
             alert('Rasmlar yuklandi va mahsulotga to‘g‘ri bog‘landi!');
 
-            // Yangilangan ma'lumotlarni qayta olish
             const refreshed = await api.get(`/api/products/${productId}`);
             if (refreshed.data.success) {
                 product.value = refreshed.data.data;
@@ -124,7 +109,6 @@ function goBack() {
 
 <template>
     <div class="upload-container">
-        <!-- Breadcrumb -->
         <div class="breadcrumb">
             <router-link to="/" class="breadcrumb-link">Home</router-link>
             <i class="bi bi-chevron-right"></i>
@@ -133,13 +117,11 @@ function goBack() {
             <span class="breadcrumb-current">Rasm yuklash</span>
         </div>
 
-        <!-- Loading -->
         <div v-if="loading" class="loading-wrapper">
             <div class="spinner-border text-primary"></div>
             <p>Mahsulot ma'lumotlari yuklanmoqda...</p>
         </div>
 
-        <!-- Upload Form -->
         <div v-else class="upload-card">
             <div class="card-header">
                 <div>
@@ -153,7 +135,6 @@ function goBack() {
             </div>
 
             <div class="card-body">
-                <!-- Current Images -->
                 <div v-if="product && product.images && product.images.length > 0" class="current-images">
                     <h3 class="section-title">Hozirgi rasmlar</h3>
                     <div class="preview-grid">
@@ -165,7 +146,6 @@ function goBack() {
                     </div>
                 </div>
 
-                <!-- File Input -->
                 <div class="upload-zone">
                     <input type="file" id="fileInput" multiple accept="image/*" @change="handleFileSelect"
                         style="display: none" />
@@ -177,7 +157,6 @@ function goBack() {
                     </label>
                 </div>
 
-                <!-- Preview Images -->
                 <div v-if="previewImages.length > 0" class="preview-section">
                     <h3 class="preview-title">Qo'shiladigan rasmlar ({{ previewImages.length }})</h3>
                     <div class="preview-grid">
@@ -191,7 +170,6 @@ function goBack() {
                     </div>
                 </div>
 
-                <!-- Info Alert -->
                 <div class="info-alert">
                     <i class="bi bi-info-circle"></i>
                     <div>
@@ -200,7 +178,6 @@ function goBack() {
                     </div>
                 </div>
 
-                <!-- Upload Button -->
                 <div class="action-buttons">
                     <button class="btn-upload" @click="uploadImages"
                         :disabled="uploading || selectedFiles.length === 0">
