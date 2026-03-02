@@ -1,6 +1,5 @@
 <template>
   <div class="form-page">
-    <!-- Breadcrumb -->
     <div class="breadcrumb">
       <router-link to="/dashboard">Home</router-link>
       <span class="separator">></span>
@@ -76,7 +75,7 @@ const form = ref({
   address: '',
   remark: '',
   password: '',
-  role: 'user',          // executive uchun 'user' yoki backendda executive role bo'lsa o'zgartiring
+  role: 'user',          
   status: 'active'
 })
 
@@ -88,7 +87,7 @@ const handleSubmit = async () => {
       name: form.value.name,
       email: form.value.email,
       phone: form.value.phone,
-      username: form.value.email.split('@')[0], // yoki alohida username maydoni qo'shsa bo'ladi
+      username: form.value.email.split('@')[0], 
       password: form.value.password,
       role: form.value.role,
       status: form.value.status,
@@ -98,7 +97,7 @@ const handleSubmit = async () => {
 
     await api.post('/api/users', payload)
     alert('User muvaffaqiyatli qo‘shildi!')
-    router.push('/users') // yoki /executive ga
+    router.push('/users')
   } catch (err) {
     console.error('Add user xatosi:', err)
     alert('Xato: ' + (err.response?.data?.message || 'Server xatosi'))

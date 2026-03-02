@@ -67,7 +67,6 @@
         </table>
       </div>
 
-      <!-- Delete Confirm Modal -->
       <div v-if="showDeleteModal" class="modal-overlay">
         <div class="modal">
           <h3 class="modal-title">Confirm Delete</h3>
@@ -283,7 +282,6 @@ function editAdmin(adminId) {
   }
 }
 
-/* Delete tugmasi hover */
 .delete-btn {
   background: transparent;
   border: none;

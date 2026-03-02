@@ -24,7 +24,6 @@
 
       <div v-else class="edit-form-container">
         <form @submit.prevent="updateAdmin" class="admin-form">
-          <!-- Username -->
           <div class="form-group">
             <label for="username">Username</label>
             <input
@@ -36,7 +35,6 @@
             />
           </div>
 
-          <!-- Email -->
           <div class="form-group">
             <label for="email">Email</label>
             <input
@@ -48,7 +46,6 @@
             />
           </div>
 
-          <!-- Firstname -->
           <div class="form-group">
             <label for="firstname">Ism</label>
             <input
@@ -60,7 +57,6 @@
             />
           </div>
 
-          <!-- Name (Familiya) -->
           <div class="form-group">
             <label for="name">Familiya</label>
             <input
@@ -72,7 +68,6 @@
             />
           </div>
 
-          <!-- Phone -->
           <div class="form-group">
             <label for="phone">Telefon raqami</label>
             <input
@@ -83,7 +78,6 @@
             />
           </div>
 
-          <!-- Status -->
           <div class="form-group">
             <label for="status">Status</label>
             <select id="status" v-model="form.status" class="form-control">
@@ -92,7 +86,6 @@
             </select>
           </div>
 
-          <!-- Tugmalar -->
           <div class="form-actions">
             <button
               type="submit"
@@ -179,8 +172,6 @@ async function updateAdmin() {
       name: form.value.name.trim(),
       phone: form.value.phone.trim() || undefined,
       status: form.value.status
-      // Agar parol o‘zgartirish kerak bo‘lsa, qo‘shing:
-      // password: form.value.password || undefined
     };
 
     const res = await api.put(`/api/admins/${adminId}`, payload);
