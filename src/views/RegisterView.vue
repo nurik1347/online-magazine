@@ -1,47 +1,82 @@
 <template>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="logo-section">
-                <img src="/logo.png" alt="SPECIFIC" class="logo">
-                <h1>Create Account</h1>
-            </div>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo-section">
+        <img src="/logo.png" alt="SPECIFIC" class="logo">
+        <h1>Create Account</h1>
+      </div>
 
-            <div class="error" v-if="useAuthStore.error">{{ useAuthStore.error }}</div>
-            <form @submit.prevent="handleRegister">
-                <div class="input-group">
-                    <label>Full Name</label>
-                    <input v-model="form.name" placeholder="John Doe" required />
-                </div>
+      <div class="error" v-if="authStore.error">{{ authStore.error }}</div>
 
-                <div class="input-group">
-                    <label>Username</label>
-                    <input v-model="form.username" placeholder="johndoe" required />
-                </div>
-
-                <div class="input-group">
-                    <label>Email</label>
-                    <input v-model="form.email" placeholder="user@example.com" required />
-                </div>
-
-                <div class="input-group">
-                    <label>Phone</label>
-                    <input v-model="form.phone" placeholder="+998901234567" required />
-                </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input v-model="form.password" placeholder="strongpass123" required />
-                </div>
-
-                <button type="submit" class="login-btn" :disabled="authStore.loading">
-                    {{ authStore.loading ? 'Creating...' : 'Register' }}
-                </button>
-            </form>
-            <p class="register-link">
-                Already have an account?
-                <router-link to="/login">Login</router-link>
-            </p>
+      <form @submit.prevent="handleRegister">
+        <div class="input-group">
+          <label>Ism (Firstname) *</label>
+          <input v-model="form.firstname" placeholder="John" required />
         </div>
+
+        <div class="input-group">
+          <label>Familiya (Name) *</label>
+          <input v-model="form.name" placeholder="Doe" required />
+        </div>
+
+        <div class="input-group">
+          <label>Username *</label>
+          <input v-model="form.username" placeholder="johndoe" required />
+        </div>
+
+        <div class="input-group">
+          <label>Email *</label>
+          <input v-model="form.email" type="email" placeholder="user@example.com" required />
+        </div>
+
+        <div class="input-group">
+          <label>Telefon *</label>
+          <input v-model="form.phone" placeholder="+998901234567" required />
+        </div>
+
+        <div class="input-group">
+          <label>Parol *</label>
+          <input v-model="form.password" type="password" placeholder="strongpass123" required />
+        </div>
+
+        <!-- Role tanlash -->
+        <div class="input-group role-group">
+          <label>Rol tanlang *</label>
+          <div class="role-options">
+            <label class="radio-label">
+              <input
+                type="radio"
+                v-model="form.role"
+                value="admin"
+                name="role"
+                required
+              />
+              <span>Admin</span>
+            </label>
+
+            <label class="radio-label">
+              <input
+                type="radio"
+                v-model="form.role"
+                value="user"
+                name="role"
+              />
+              <span>User</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="login-btn" :disabled="authStore.loading">
+          {{ authStore.loading ? 'Creating...' : 'Register' }}
+        </button>
+      </form>
+
+      <p class="register-link">
+        Already have an account?
+        <router-link to="/login">Login</router-link>
+      </p>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -49,26 +84,71 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
-const authStore = useAuthStore()
-const router = useRouter()
+const authStore = useAuthStore();
+const router = useRouter();
 
 const form = ref({
-    name: '',
-    username: '',
-    email: '',
-    phone: '',
-    password: ''
-})
+  firstname: '',
+  name: '',
+  username: '',
+  email: '',
+  phone: '',
+  password: '',
+  role: 'user' 
+});
 
 const handleRegister = async () => {
-    const result = await authStore.register(form.value)
-    if (result.success) {
-        router.push('/')
-    }
-}
+  if (!form.value.firstname || !form.value.name || !form.value.username ||
+      !form.value.email || !form.value.password || !form.value.role) {
+    authStore.error = 'Barcha majburiy maydonlarni to‘ldiring';
+    return;
+  }
+
+  const payload = {
+    firstname: form.value.firstname.trim(),
+    name: form.value.name.trim(),
+    username: form.value.username.trim(),
+    email: form.value.email.trim(),
+    phone: form.value.phone.trim(),
+    password: form.value.password,
+    role: form.value.role 
+  };
+
+  const result = await authStore.register(payload);
+
+  if (result.success) {
+    router.push('/');
+  }
+};
 </script>
 
 <style scoped>
+
+.role-group {
+  margin-bottom: 1.5rem;
+}
+
+.role-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #333;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #e63946;
+}
 .login-container {
     min-height: 100vh;
     display: flex;
