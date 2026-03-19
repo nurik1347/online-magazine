@@ -134,30 +134,16 @@ function getImageUrl(image) {
     <div v-else-if="products.length > 0" class="products-grid">
       <div v-for="product in products" :key="product.id" class="product-card">
         <div class="card-image">
-          <Swiper
-            :modules="[Navigation, Pagination]"
-            :slides-per-view="1"
-            :space-between="0"
-            :loop="product.images?.length > 1"
-            navigation
-            pagination
-            class="product-swiper"
-          >
+          <Swiper :modules="[Navigation, Pagination]" :slides-per-view="1" :space-between="0"
+            :loop="product.images?.length > 1" navigation pagination class="product-swiper">
             <SwiperSlide v-for="(image, index) in product.images || []" :key="index">
-              <img
-                :src="getImageUrl(image)"
-                :alt="`${product.title || 'Mahsulot'} - ${index + 1}`"
-                class="swiper-image"
-                @error="$event.target.src = 'https://via.placeholder.com/300x300?text=No+Image'"
-              />
+              <img :src="getImageUrl(image)" :alt="`${product.title || 'Mahsulot'} - ${index + 1}`" class="swiper-image"
+                @error="$event.target.src = 'https://via.placeholder.com/300x300?text=No+Image'" />
             </SwiperSlide>
 
             <SwiperSlide v-if="!(product.images?.length)">
-              <img
-                src="https://via.placeholder.com/300x300?text=No+Image"
-                alt="Rasm mavjud emas"
-                class="swiper-image"
-              />
+              <img src="https://via.placeholder.com/300x300?text=No+Image" alt="Rasm mavjud emas"
+                class="swiper-image" />
             </SwiperSlide>
           </Swiper>
 
@@ -589,8 +575,15 @@ function getImageUrl(image) {
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
 }
 
 .empty-title {
