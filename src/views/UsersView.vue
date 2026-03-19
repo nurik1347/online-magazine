@@ -9,17 +9,25 @@
 
         <div class="header-row">
             <h2 class="section-title">Users</h2>
-            <button class="add-btn" @click="goToAdd">+ Add</button>
+            <div class="header-actions">
+                <input
+                    v-model="search"
+                    class="search-input"
+                    type="search"
+                    placeholder="Search users..."
+                />
+                <button v-if="isAdmin" class="add-btn" @click="goToAdd">+ Add</button>
+            </div>
         </div>
 
         <div class="tabs">
             <button class="tab active">
-                All ({{ users.length }})
+                All ({{ filteredUsers.length }})
             </button>
         </div>
 
         <div v-if="loading" class="loading">Loading users...</div>
-        <div v-if="!loading && users.length === 0" class="no-data">No users found</div>
+        <div v-if="!loading && filteredUsers.length === 0" class="no-data">No users found</div>
 
         <div v-else class="table-wrapper">
             <table class="users-table">
@@ -35,11 +43,11 @@
                         <th>ROLE</th>
                         <th>CREATE DATE</th>
                         <th>UPDATE DATE</th>
-                        <th>ACTIONS</th>
+                        <th v-if="isAdmin">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(user, index) in users" :key="user.id">
+                    <tr v-for="(user, index) in filteredUsers" :key="user.id">
                         <td>{{ index + 1 }}</td>
                         <td>{{ user.username || '-' }}</td>
                         <td>{{ user.email || '-' }}</td>
@@ -58,7 +66,7 @@
                         </td>
                         <td>{{ formatDate(user.createdAt) }}</td>
                         <td>{{ formatDate(user.updatedAt) }}</td>
-                        <td class="actions">
+                        <td v-if="isAdmin" class="actions">
                             <button class="action-btn edit" title="Edit" @click="goToEdit(user.id)">
                                 <Icon name="edit" :size="16" />
                             </button>
@@ -87,15 +95,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import Icon from '../components/Icon.vue'
+import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const users = ref([])
 const loading = ref(true)
+const search = ref('')
+const isAdmin = computed(() => authStore.isAdmin)
 
 const toast = ref({
     show: false,
@@ -105,7 +117,7 @@ const toast = ref({
 
 onMounted(async () => {
     try {
-        const res = await api.get('/api/users?page=1&limit=50')
+        const res = await api.get('/api/users?page=1&limit=1000')
         if (res.data.success && res.data.data?.users) {
             users.value = res.data.data.users.filter(u =>
                 u.role?.toLowerCase() === 'executive' || u.role?.toLowerCase() === 'user'
@@ -116,6 +128,29 @@ onMounted(async () => {
     } finally {
         loading.value = false
     }
+})
+
+const filteredUsers = computed(() => {
+    const query = search.value.trim().toLowerCase()
+    if (!query) return users.value
+
+    return users.value.filter((user) => {
+        const haystack = [
+            user.username,
+            user.email,
+            user.address,
+            user.phone,
+            user.activeBy,
+            user.status,
+            user.role,
+            user.createdAt,
+            user.updatedAt
+        ]
+            .map(value => (value ?? '').toString().toLowerCase())
+            .join(' ')
+
+        return haystack.includes(query)
+    })
 })
 
 const formatDate = (dateStr) => {
@@ -226,6 +261,13 @@ function showToast(message, type = 'success') {
     gap: 16px;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .section-title {
     font-size: 22px;
     font-weight: 700;
@@ -294,7 +336,8 @@ function showToast(message, type = 'success') {
     width: 100%;
     border-collapse: collapse;
     font-size: 12.5px;
-    min-width: 1000px;
+    min-width: 900px;
+    table-layout: auto;
 }
 
 .users-table thead {
@@ -325,12 +368,38 @@ function showToast(message, type = 'success') {
     transition: background 0.2s ease;
 }
 
+.users-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.users-table th:nth-child(1),
+.users-table td:nth-child(1),
+.users-table th:nth-child(7),
+.users-table td:nth-child(7),
+.users-table th:nth-child(8),
+.users-table td:nth-child(8) {
+    text-align: center;
+}
+
+.users-table td:not(:nth-child(3)):not(:nth-child(4)) {
+    white-space: nowrap;
+}
+
+.users-table td:nth-child(3),
+.users-table td:nth-child(4) {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.35;
+}
+
 .status-badge {
     padding: 4px 10px;
     border-radius: 16px;
     font-size: 11px;
     font-weight: 600;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 70px;
     text-align: center;
     border: 1px solid;
@@ -423,6 +492,15 @@ function showToast(message, type = 'success') {
         gap: 16px;
     }
 
+    .header-actions {
+        width: 100%;
+    }
+
+    .search-input {
+        min-width: 0;
+        width: 100%;
+    }
+
     .add-btn {
         width: 100%;
         justify-content: center;
@@ -460,7 +538,9 @@ function showToast(message, type = 'success') {
     border-radius: 16px;
     font-size: 11px;
     font-weight: 600;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 70px;
     text-align: center;
     border: 1px solid;

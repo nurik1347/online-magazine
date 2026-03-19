@@ -19,7 +19,7 @@
         </li>
 
         <li class="section-title">User Details</li>
-        <li>
+        <li v-if="isAdmin">
           <router-link to="/admins" class="link" @click="handleNavigate">
             <span class="nav-icon">
               <Icon name="admin" :size="18" />
@@ -61,9 +61,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import api from '../services/api'
 import Icon from './Icon.vue'
+import { useAuthStore } from '../stores/auth'
 
 const props = defineProps({
   open: {
@@ -78,8 +79,10 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+const authStore = useAuthStore()
 const adminCount = ref(0)
 const userCount = ref(0)
+const isAdmin = computed(() => authStore.isAdmin)
 
 const closeSidebar = () => {
   emit('close')
@@ -91,19 +94,38 @@ const handleNavigate = () => {
   }
 }
 
-onMounted(async () => {
+const fetchAdminCount = async () => {
   try {
     const adminsRes = await api.get('/api/admins?page=1&limit=1000')
     if (adminsRes.data.success && adminsRes.data.data.admins) {
       adminCount.value = adminsRes.data.data.admins.length
     }
+  } catch (err) {
+    console.error('Sidebar admin counts yuklanmadi:', err)
+  }
+}
 
+const fetchUserCount = async () => {
+  try {
     const usersRes = await api.get('/api/users?role=user&page=1&limit=1000')
     if (usersRes.data.success && usersRes.data.data.users) {
       userCount.value = usersRes.data.data.users.length
     }
   } catch (err) {
-    console.error('Sidebar counts yuklanmadi:', err)
+    console.error('Sidebar user counts yuklanmadi:', err)
+  }
+}
+
+onMounted(async () => {
+  await fetchUserCount()
+  if (isAdmin.value) {
+    await fetchAdminCount()
+  }
+})
+
+watch(isAdmin, async (value) => {
+  if (value) {
+    await fetchAdminCount()
   }
 })
 </script>
@@ -114,9 +136,11 @@ onMounted(async () => {
   border-right: 1px solid var(--border);
   padding: 28px 24px;
   min-height: calc(100vh - var(--navbar-height));
+  height: calc(100vh - var(--navbar-height));
   position: sticky;
   top: var(--navbar-height);
   overflow-y: auto;
+  overscroll-behavior: contain;
   width: var(--sidebar-width);
   flex: 0 0 var(--sidebar-width);
   box-sizing: border-box;

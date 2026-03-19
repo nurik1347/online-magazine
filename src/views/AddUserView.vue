@@ -10,33 +10,33 @@
 
     <form @submit.prevent="handleSubmit" class="user-form">
       <div class="form-group">
-        <label>Executive Name :</label>
-        <input v-model="form.name" type="text" placeholder="Enter name" required />
+        <label>Firstname :</label>
+        <input v-model="form.firstname" type="text" placeholder="Alisher" required />
+      </div>
+
+      <div class="form-group">
+        <label>Lastname :</label>
+        <input v-model="form.name" type="text" placeholder="Karimov" required />
+      </div>
+
+      <div class="form-group">
+        <label>Username :</label>
+        <input v-model="form.username" type="text" placeholder="user1" required />
       </div>
 
       <div class="form-group">
         <label>Email Address :</label>
-        <input v-model="form.email" type="email" placeholder="Enter email" required />
+        <input v-model="form.email" type="email" placeholder="user1@example.com" required />
       </div>
 
       <div class="form-group">
-        <label>Mobile Number (Login Number) :</label>
-        <input v-model="form.phone" type="tel" placeholder="Enter phone number" required />
-      </div>
-
-      <div class="form-group">
-        <label>Address :</label>
-        <input v-model="form.address" type="text" placeholder="Enter address" />
-      </div>
-
-      <div class="form-group">
-        <label>Remark :</label>
-        <input v-model="form.remark" type="text" placeholder="Enter remark" />
+        <label>Mobile Number :</label>
+        <input v-model="form.phone" type="tel" placeholder="+998901234561" required />
       </div>
 
       <div class="form-group">
         <label>Password :</label>
-        <input v-model="form.password" type="password" placeholder="Enter password" required />
+        <input v-model="form.password" type="password" placeholder="strongpass123" required />
       </div>
 
       <div class="form-group status-group">
@@ -69,11 +69,11 @@ const router = useRouter()
 const loading = ref(false)
 
 const form = ref({
+  firstname: '',
   name: '',
+  username: '',
   email: '',
   phone: '',
-  address: '',
-  remark: '',
   password: '',
   role: 'user',          
   status: 'active'
@@ -83,16 +83,22 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
+    if (!form.value.firstname || !form.value.name || !form.value.username ||
+        !form.value.email || !form.value.phone || !form.value.password) {
+      alert('Barcha majburiy maydonlarni to\'ldiring')
+      loading.value = false
+      return
+    }
+
     const payload = {
-      name: form.value.name,
-      email: form.value.email,
-      phone: form.value.phone,
-      username: form.value.email.split('@')[0], 
+      email: form.value.email.trim(),
+      phone: form.value.phone.trim(),
+      username: form.value.username.trim(),
+      firstname: form.value.firstname.trim(),
+      name: form.value.name.trim(),
       password: form.value.password,
       role: form.value.role,
-      status: form.value.status,
-      address: form.value.address,
-      remark: form.value.remark
+      status: form.value.status
     }
 
     await api.post('/api/users', payload)
@@ -130,7 +136,7 @@ const handleSubmit = async () => {
 }
 
 .current {
-  color: var(--primary);
+  color: var(--text);
   font-weight: 500;
 }
 
@@ -156,7 +162,7 @@ const handleSubmit = async () => {
 .form-group label {
   display: block;
   font-size: 14px;
-  color: var(--primary);
+  color: var(--text);
   font-weight: 500;
   margin-bottom: 6px;
 }

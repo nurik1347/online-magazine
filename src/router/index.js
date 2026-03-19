@@ -38,7 +38,7 @@ const routes = [
         path: '/admins',
         name: 'Admins',
         component: AdminsView,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
         path: '/products',
@@ -64,6 +64,7 @@ const routes = [
         component: () => import('../views/UploadProductImage.vue'),
         meta: {
             requiresAuth: true,
+            requiresAdmin: true,
             layout: 'default'
         }
     },
@@ -71,13 +72,13 @@ const routes = [
         path: '/users/add',
         name: 'AddUser',
         component: () => import('../views/AddUserView.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
         path: '/users/:id/edit',
         name: 'EditUser',
         component: () => import('../views/EditUserView.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
         path: '/products/add',
@@ -94,12 +95,14 @@ const routes = [
     {
         path: '/products/:id/edit',
         name: 'EditProduct',
-        component: () => import('../views/EditProduct.vue')
+        component: () => import('../views/EditProduct.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
         path: '/admins/:id/edit',
         name: 'EditAdmin',
-        component: () => import('../views/EditAdmin.vue')
+        component: () => import('../views/EditAdmin.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
     },
     { path: '/:pathMatch(.*)*', redirect: '/login' }
 ]
@@ -142,6 +145,13 @@ router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresGuest && isAuthenticated) {
         next({ name: 'Dashboard' })
         return
+    }
+
+    if (to.meta.requiresAdmin) {
+        if (!authStore.isAdmin) {
+            next({ name: 'Dashboard' })
+            return
+        }
     }
 
     next()

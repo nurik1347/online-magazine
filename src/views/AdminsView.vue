@@ -10,20 +10,28 @@
 
       <div class="page-header">
         <h2 class="page-title">Users</h2>
-        <button class="add-btn" @click="goToCreate">
-          <span class="plus">+</span> Add New
-        </button>
+        <div class="header-actions">
+          <input
+            v-model="search"
+            class="search-input"
+            type="search"
+            placeholder="Search admins..."
+          />
+          <button class="add-btn" @click="goToCreate">
+            <span class="plus">+</span> Add New
+          </button>
+        </div>
       </div>
 
       <div class="tabs">
         <button class="tab active">
-          All ({{ admins.length }})
+          All ({{ filteredAdmins.length }})
         </button>
       </div>
 
       <div v-if="loading" class="loading">Loading...</div>
 
-      <div v-else-if="admins.length === 0" class="no-data">No admins found</div>
+      <div v-else-if="filteredAdmins.length === 0" class="no-data">No admins found</div>
 
       <div v-else class="table-container">
         <table class="admins-table">
@@ -41,7 +49,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(admin, index) in admins" :key="admin.id">
+            <tr v-for="(admin, index) in filteredAdmins" :key="admin.id">
               <td>{{ index + 1 }}</td>
               <td>{{ admin.username }}</td>
               <td>{{ admin.email }}</td>
@@ -107,13 +115,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../services/api';
 
 const admins = ref([]);
 const loading = ref(true);
 const router = useRouter();
+const search = ref('');
 
 const showDeleteModal = ref(false);
 const selectedAdminId = ref(null);
@@ -126,7 +135,7 @@ const toast = ref({
 
 onMounted(async () => {
   try {
-    const res = await api.get('/api/admins');
+    const res = await api.get('/api/admins?page=1&limit=1000');
     if (res.data.success && res.data.data?.admins) {
       admins.value = res.data.data.admins;
     }
@@ -135,6 +144,27 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+});
+
+const filteredAdmins = computed(() => {
+  const query = search.value.trim().toLowerCase();
+  if (!query) return admins.value;
+
+  return admins.value.filter((admin) => {
+    const haystack = [
+      admin.username,
+      admin.email,
+      admin.phone,
+      admin.status,
+      admin.role,
+      admin.createdAt,
+      admin.updatedAt
+    ]
+      .map(value => (value ?? '').toString().toLowerCase())
+      .join(' ');
+
+    return haystack.includes(query);
+  });
 });
 
 const formatDate = (dateString) => {
@@ -443,6 +473,13 @@ function showToast(message, type = 'success') {
   margin-bottom: 20px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .page-title {
   font-size: 24px;
   font-weight: 700;
@@ -669,6 +706,15 @@ function showToast(message, type = 'success') {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .search-input {
+    min-width: 0;
+    width: 100%;
   }
 
   .add-btn {

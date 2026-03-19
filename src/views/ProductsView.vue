@@ -7,19 +7,48 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { Navigation, Pagination } from 'swiper/modules';
+import Icon from '../components/Icon.vue';
+import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 const products = ref([]);
 const loading = ref(true);
+const search = ref('');
 const categoryId = computed(() => route.params.id || null);
 const isCategoryView = computed(() => Boolean(categoryId.value));
+const isAdmin = computed(() => authStore.isAdmin);
 const pageTitle = computed(() => (isCategoryView.value ? 'Category Products' : 'Barcha Mahsulotlar'));
+const filteredProducts = computed(() => {
+  const query = search.value.trim().toLowerCase();
+  if (!query) return products.value;
+
+  return products.value.filter((product) => {
+    const haystack = [
+      product.title,
+      product.brand,
+      product.description,
+      product.currency,
+      product.price,
+      product.oldPrice,
+      product.stock
+    ]
+      .map(value => (value ?? '').toString().toLowerCase())
+      .join(' ');
+
+    return haystack.includes(query);
+  });
+});
+
+const hasSearch = computed(() => search.value.trim().length > 0);
+
 const pageSubtitle = computed(() => {
+  const count = filteredProducts.value.length;
   if (isCategoryView.value) {
-    return `${products.value.length} ta mahsulot`;
+    return `${count} ta mahsulot`;
   }
-  return `${products.value.length} ta mahsulot mavjud`;
+  return `${count} ta mahsulot mavjud`;
 });
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://student.jamshidibodullayev.uz';
@@ -118,10 +147,18 @@ function getImageUrl(image) {
         <h1 class="page-title">{{ pageTitle }}</h1>
         <p class="page-subtitle">{{ pageSubtitle }}</p>
       </div>
-      <button class="btn-add-product" @click="goToAddProduct">
-        <i class="bi bi-plus-circle"></i>
-        Yangi Mahsulot
-      </button>
+      <div class="header-actions">
+        <input
+          v-model="search"
+          class="search-input"
+          type="search"
+          placeholder="Search products..."
+        />
+        <button v-if="isAdmin" class="btn-add-product" @click="goToAddProduct">
+          <i class="bi bi-plus-circle"></i>
+          Yangi Mahsulot
+        </button>
+      </div>
     </div>
 
     <div v-if="loading" class="loading-wrapper">
@@ -131,8 +168,8 @@ function getImageUrl(image) {
       <p class="loading-text">Mahsulotlar yuklanmoqda...</p>
     </div>
 
-    <div v-else-if="products.length > 0" class="products-grid">
-      <div v-for="product in products" :key="product.id" class="product-card">
+    <div v-else-if="filteredProducts.length > 0" class="products-grid">
+      <div v-for="product in filteredProducts" :key="product.id" class="product-card">
         <div class="card-image">
           <Swiper :modules="[Navigation, Pagination]" :slides-per-view="1" :space-between="0"
             :loop="product.images?.length > 1" navigation pagination class="product-swiper">
@@ -172,7 +209,7 @@ function getImageUrl(image) {
             <span>Omborda: {{ product.stock || 0 }} dona</span>
           </div>
 
-          <div class="card-actions">
+          <div v-if="isAdmin" class="card-actions">
             <button class="btn-action btn-primary" @click="goToUploadImage(product.id)" title="Rasm yuklash">
               <i class="bi bi-image"></i> Rasm
             </button>
@@ -180,7 +217,7 @@ function getImageUrl(image) {
               <i class="bi bi-pencil"></i> Tahrirlash
             </button>
             <button class="btn-action btn-danger" @click="deleteProduct(product.id)" title="O'chirish">
-              <i class="bi bi-trash"></i>
+              <Icon name="trash" :size="16" />
             </button>
           </div>
         </div>
@@ -189,9 +226,13 @@ function getImageUrl(image) {
 
     <div v-else class="empty-state">
       <div class="empty-icon">📦</div>
-      <h3 class="empty-title">Mahsulotlar topilmadi</h3>
-      <p class="empty-text">Birinchi mahsulotingizni qo'shing</p>
-      <button class="btn-empty-action" @click="goToAddProduct">
+      <h3 class="empty-title">
+        {{ hasSearch ? 'Mahsulot topilmadi' : 'Mahsulotlar topilmadi' }}
+      </h3>
+      <p class="empty-text">
+        {{ hasSearch ? 'Qidiruvni o\'zgartirib ko\'ring' : 'Birinchi mahsulotingizni qo\'shing' }}
+      </p>
+      <button v-if="!hasSearch && isAdmin" class="btn-empty-action" @click="goToAddProduct">
         <i class="bi bi-plus-circle"></i> Mahsulot qo'shish
       </button>
     </div>
@@ -251,6 +292,13 @@ function getImageUrl(image) {
   border: 1px solid var(--border);
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .page-title {
@@ -637,6 +685,15 @@ function getImageUrl(image) {
     flex-direction: column;
     align-items: flex-start;
     gap: 1.2rem;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .search-input {
+    min-width: 0;
+    width: 100%;
   }
 
   .btn-add-product {

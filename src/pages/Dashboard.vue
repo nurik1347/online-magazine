@@ -8,7 +8,7 @@
       <h2 class="section-title">Statistics</h2>
 
       <div class="cards-container">
-        <div class="stat-card" data-tone="primary" @click="goToAdmins">
+        <div v-if="isAdmin" class="stat-card" data-tone="primary" @click="goToAdmins">
           <div class="card-icon-wrapper">
             <Icon name="admin" :size="32" />
           </div>
@@ -43,12 +43,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import Icon from '../components/Icon.vue'
+import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const isAdmin = computed(() => authStore.isAdmin)
 
 const stats = ref({
   totalAdmins: 0,
@@ -56,15 +59,13 @@ const stats = ref({
   totalProducts: 0
 })
 
-onMounted(async () => {
-  await fetchStats()
-})
-
-const fetchStats = async () => {
+const fetchStats = async (includeAdmins = false) => {
   try {
-    const adminsRes = await api.get('/api/admins?page=1&limit=1000')
-    if (adminsRes.data.success && adminsRes.data.data.admins) {
-      stats.value.totalAdmins = adminsRes.data.data.admins.length
+    if (includeAdmins) {
+      const adminsRes = await api.get('/api/admins?page=1&limit=1000')
+      if (adminsRes.data.success && adminsRes.data.data.admins) {
+        stats.value.totalAdmins = adminsRes.data.data.admins.length
+      }
     }
 
     const usersRes = await api.get('/api/users?role=user&page=1&limit=1000')
@@ -80,6 +81,14 @@ const fetchStats = async () => {
     console.error('Dashboard stats yuklanmadi:', err)
   }
 }
+
+watch(
+  isAdmin,
+  (value) => {
+    fetchStats(value)
+  },
+  { immediate: true }
+)
 
 const goToAdmins = () => {
   router.push('/admins')

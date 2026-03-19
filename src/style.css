@@ -32,14 +32,30 @@ html, body {
   height: 100%;
 }
 
+html {
+  background: var(--bg);
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--text);
+  background: var(--bg);
+  position: relative;
+  z-index: 0;
+  text-rendering: optimizeLegibility;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background:
     radial-gradient(1200px 600px at 10% -10%, rgba(228, 61, 64, 0.12), transparent 60%),
     radial-gradient(900px 600px at 90% -10%, rgba(15, 118, 110, 0.12), transparent 60%),
     var(--bg);
-  text-rendering: optimizeLegibility;
+  background-repeat: no-repeat;
+  pointer-events: none;
 }
 
 button, input, textarea, select {
@@ -55,6 +71,27 @@ input, textarea, select {
 }
 
 input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(228, 61, 64, 0.12);
+}
+
+.search-input {
+  width: 100%;
+  min-width: 220px;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-strong);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.search-input:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(228, 61, 64, 0.12);

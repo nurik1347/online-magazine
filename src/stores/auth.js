@@ -9,13 +9,18 @@ export const useAuthStore = defineStore('auth', {
         accessToken: localStorage.getItem('accessToken') || null,
         refreshToken: localStorage.getItem('refreshToken') || null,
         userId: localStorage.getItem('userId') || null,
+        role: localStorage.getItem('role') || null,
         loading: false,
         error: null
     }),
 
     getters: {
         isAuthenticated: (state) => !!state.accessToken,
-        getUser: (state) => state.user
+        getUser: (state) => state.user,
+        isAdmin: (state) => {
+            const role = (state.user?.role || state.role || '').toString().toLowerCase()
+            return role.includes('admin')
+        }
     },
 
     actions: {
@@ -34,10 +39,12 @@ export const useAuthStore = defineStore('auth', {
             this.accessToken = null
             this.refreshToken = null
             this.userId = null
+            this.role = null
 
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem("userId")
+            localStorage.removeItem('role')
         },
 
         async register(userData) {
@@ -98,6 +105,11 @@ export const useAuthStore = defineStore('auth', {
                 })
                 if (res.data.success) {
                     this.user = res.data.data
+                    const role = this.user?.role ? this.user.role.toString().toLowerCase() : null
+                    if (role) {
+                        this.role = role
+                        localStorage.setItem('role', role)
+                    }
                 }
             } catch (err) {
                 console.warn('User fetch failed', err)

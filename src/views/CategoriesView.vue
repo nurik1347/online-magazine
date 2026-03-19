@@ -10,11 +10,19 @@
     <div class="page-header">
       <div>
         <h2 class="page-title">Categories</h2>
-        <p class="page-subtitle">{{ categories.length }} total</p>
+        <p class="page-subtitle">{{ filteredCategories.length }} total</p>
+      </div>
+      <div class="header-actions">
+        <input
+          v-model="search"
+          class="search-input"
+          type="search"
+          placeholder="Search categories..."
+        />
       </div>
     </div>
 
-    <div class="form-card">
+    <div v-if="isAdmin" class="form-card">
       <div class="form-title">{{ isEditing ? 'Edit Category' : 'Add Category' }}</div>
       <div class="form-grid">
         <div class="field">
@@ -52,13 +60,13 @@
     </div>
 
     <div v-if="loading" class="loading">Loading categories...</div>
-    <div v-else-if="categories.length === 0" class="empty">
-      No categories found. Add your first one above.
+    <div v-else-if="filteredCategories.length === 0" class="empty">
+      {{ hasSearch ? 'No categories found.' : 'No categories found. Add your first one above.' }}
     </div>
 
     <div v-else class="grid">
       <div
-        v-for="(cat, index) in categories"
+        v-for="(cat, index) in filteredCategories"
         :key="getCategoryId(cat) || index"
         class="card"
         @click="goToCategory(cat)"
@@ -72,12 +80,12 @@
         </div>
         <div class="card-body">
           <div class="card-title">{{ cat.title || 'Untitled' }}</div>
-          <div class="card-actions">
-            <button class="btn small" @click.stop="startEdit(cat)">Edit</button>
-            <button class="btn small danger" @click.stop="deleteCategory(cat)">Delete</button>
-          </div>
+        <div v-if="isAdmin" class="card-actions">
+          <button class="btn small" @click.stop="startEdit(cat)">Edit</button>
+          <button class="btn small danger" @click.stop="deleteCategory(cat)">Delete</button>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -86,14 +94,17 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
+import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const categories = ref([])
 const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
 const success = ref('')
 const editingId = ref(null)
+const search = ref('')
 
 const form = ref({
   title: '',
@@ -104,6 +115,18 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://student.jamsh
 const placeholderUrl = 'https://via.placeholder.com/400x260?text=Category'
 
 const isEditing = computed(() => editingId.value !== null)
+const isAdmin = computed(() => authStore.isAdmin)
+const hasSearch = computed(() => search.value.trim().length > 0)
+
+const filteredCategories = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  if (!query) return categories.value
+
+  return categories.value.filter((cat) => {
+    const title = (cat?.title ?? cat?.name ?? '').toString().toLowerCase()
+    return title.includes(query)
+  })
+})
 
 onMounted(async () => {
   await fetchCategories()
@@ -261,6 +284,13 @@ async function deleteCategory(cat) {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .page-title {
@@ -473,6 +503,15 @@ async function deleteCategory(cat) {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .search-input {
+    min-width: 0;
+    width: 100%;
   }
 
   .form-card {
