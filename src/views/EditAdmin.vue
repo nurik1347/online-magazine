@@ -354,4 +354,35 @@ label {
 .btn-cancel:hover {
   background: #5a5a5a;
 }
+
+@media (max-width: 768px) {
+  .edit-admin-page {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-back {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .edit-form-container {
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-save,
+  .btn-cancel {
+    width: 100%;
+  }
+}
 </style>

@@ -625,6 +625,14 @@ function getImageUrl(image) {
 }
 
 @media (max-width: 768px) {
+  .products-container {
+    padding: 1rem;
+  }
+
+  .breadcrumb {
+    padding: 0.75rem 1rem;
+  }
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;

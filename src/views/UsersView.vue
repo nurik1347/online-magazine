@@ -282,6 +282,8 @@ function showToast(message, type = 'success') {
 
 .table-wrapper {
     overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     border-radius: 12px;
     box-shadow: var(--shadow-soft);
     background: var(--surface-strong);
@@ -411,6 +413,10 @@ function showToast(message, type = 'success') {
 }
 
 @media (max-width: 768px) {
+    .users-page {
+        padding: 16px;
+    }
+
     .header-row {
         flex-direction: column;
         align-items: flex-start;
@@ -424,6 +430,28 @@ function showToast(message, type = 'success') {
 
     .tabs {
         flex-wrap: wrap;
+    }
+
+    .table-wrapper {
+        margin: 0 -16px;
+        border-radius: 0;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .toast {
+        right: 16px;
+        left: 16px;
+        min-width: 0;
     }
 }
 

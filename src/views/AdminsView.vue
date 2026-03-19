@@ -510,7 +510,9 @@ function showToast(message, type = 'success') {
 .table-container {
   background: var(--surface-strong);
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border);
 }
@@ -518,6 +520,7 @@ function showToast(message, type = 'success') {
 .admins-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 900px;
 }
 
 .admins-table thead {
@@ -580,6 +583,7 @@ function showToast(message, type = 'success') {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: nowrap;
 }
 
 .edit-btn,
@@ -654,5 +658,44 @@ function showToast(message, type = 'success') {
 
 .page-btn.next {
   font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .admins-page {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .table-container {
+    margin: 0 -16px;
+    border-radius: 0;
+  }
+
+  .admins-table th,
+  .admins-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .toast {
+    right: 16px;
+    left: 16px;
+    min-width: 0;
+  }
+
+  .modal {
+    margin: 0 16px;
+    padding: 24px;
+  }
 }
 </style>

@@ -156,4 +156,19 @@ input:focus {
 .register-link a:hover {
   text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 2rem 1.5rem;
+    margin: 0 16px;
+  }
+
+  .logo {
+    max-width: 150px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+}
 </style>

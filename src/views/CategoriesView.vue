@@ -463,4 +463,25 @@ async function deleteCategory(cat) {
     justify-content: flex-start;
   }
 }
+
+@media (max-width: 768px) {
+  .categories-page {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .form-card {
+    padding: 14px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
 </style>

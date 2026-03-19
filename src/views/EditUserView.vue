@@ -245,4 +245,24 @@ const handleUpdate = async () => {
   background: rgba(228, 61, 64, 0.5);
   cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+  .form-page {
+    padding: 16px;
+  }
+
+  .user-form {
+    max-width: 100%;
+  }
+
+  .radio-group {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .submit-btn {
+    width: 100%;
+  }
+}
 </style>
