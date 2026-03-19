@@ -1,14 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-}
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Sora:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary: #e63946;
-  --primary-dark: #d00000;
-  --bg: #f8f9fa;
-  --card-bg: white;
+  --font-sans: 'Sora', 'Manrope', 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces', 'Sora', serif;
+  --bg: #f6f1ea;
+  --surface: #fff9f1;
+  --surface-strong: #ffffff;
+  --text: #1f1b16;
+  --muted: #6f655c;
+  --primary: #e43d40;
+  --primary-strong: #c92a2a;
+  --accent: #0f766e;
+  --accent-2: #f59f00;
+  --border: #eadfd2;
+  --shadow-soft: 0 6px 18px rgba(31, 27, 22, 0.08);
+  --shadow: 0 14px 32px rgba(31, 27, 22, 0.14);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --navbar-height: 64px;
+  --sidebar-width: 260px;
 }
 
 * {
@@ -17,11 +28,82 @@ body {
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
+html, body {
+  height: 100%;
 }
 
-h1, h2 {
-  color: #333;
+body {
+  font-family: var(--font-sans);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(228, 61, 64, 0.12), transparent 60%),
+    radial-gradient(900px 600px at 90% -10%, rgba(15, 118, 110, 0.12), transparent 60%),
+    var(--bg);
+  text-rendering: optimizeLegibility;
+}
+
+button, input, textarea, select {
+  font-family: var(--font-sans);
+  color: inherit;
+}
+
+input, textarea, select {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(228, 61, 64, 0.12);
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+i[class^="bi"],
+i[class*=" bi-"],
+.bi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+  vertical-align: middle;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(228, 61, 64, 0.4);
+  outline-offset: 2px;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  color: var(--text);
+}
+
+::selection {
+  background: rgba(228, 61, 64, 0.18);
+}
+
+@keyframes floatIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

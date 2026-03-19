@@ -8,32 +8,32 @@
       <h2 class="section-title">Statistics</h2>
 
       <div class="cards-container">
-        <div class="stat-card" @click="goToAdmins">
-          <div class="card-icon-wrapper red">
-            <div class="card-icon">👤</div>
+        <div class="stat-card" data-tone="primary" @click="goToAdmins">
+          <div class="card-icon-wrapper">
+            <Icon name="admin" :size="32" />
           </div>
           <div class="card-bottom">
-            <div class="count red-text">{{ stats.totalAdmins }}</div>
+            <div class="count">{{ stats.totalAdmins }}</div>
             <div class="label">Total Admin</div>
           </div>
         </div>
 
-        <div class="stat-card" @click="goToUsers">
-          <div class="card-icon-wrapper green">
-            <div class="card-icon">👤</div>
+        <div class="stat-card" data-tone="accent" @click="goToUsers">
+          <div class="card-icon-wrapper">
+            <Icon name="users" :size="32" />
           </div>
           <div class="card-bottom">
-            <div class="count green-text">{{ stats.totalUsers }}</div>
+            <div class="count">{{ stats.totalUsers }}</div>
             <div class="label">Total Users</div>
           </div>
         </div>
 
-        <div class="stat-card" @click="goToProducts">
-          <div class="card-icon-wrapper blue">
-            <div class="card-icon">📦</div>
+        <div class="stat-card" data-tone="info" @click="goToProducts">
+          <div class="card-icon-wrapper">
+            <Icon name="products" :size="32" />
           </div>
           <div class="card-bottom">
-            <div class="count blue-text">{{ stats.totalProducts }}</div>
+            <div class="count">{{ stats.totalProducts }}</div>
             <div class="label">Total Products</div>
           </div>
         </div>
@@ -46,6 +46,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
+import Icon from '../components/Icon.vue'
 
 const router = useRouter()
 
@@ -61,27 +62,20 @@ onMounted(async () => {
 
 const fetchStats = async () => {
   try {
-    const adminsRes = await api.get('/api/admins')
-    console.log('Admins API:', adminsRes.data)
-    
+    const adminsRes = await api.get('/api/admins?page=1&limit=1000')
     if (adminsRes.data.success && adminsRes.data.data.admins) {
       stats.value.totalAdmins = adminsRes.data.data.admins.length
     }
 
-    const usersRes = await api.get('/api/users?role=user')
-    console.log('Users API:', usersRes.data)
-    
+    const usersRes = await api.get('/api/users?role=user&page=1&limit=1000')
     if (usersRes.data.success && usersRes.data.data.users) {
       stats.value.totalUsers = usersRes.data.data.users.length
     }
 
-    const productsRes = await api.get('/api/products')
-    console.log('Products API:', productsRes.data)
-    
+    const productsRes = await api.get('/api/products?page=1&limit=1000')
     if (productsRes.data.success && productsRes.data.data.products) {
       stats.value.totalProducts = productsRes.data.data.products.length
     }
-
   } catch (err) {
     console.error('Dashboard stats yuklanmadi:', err)
   }
@@ -103,107 +97,104 @@ const goToProducts = () => {
 <style scoped>
 .dashboard-page {
   padding: 20px 24px;
-  background: #f8f9fa;
+  background: transparent;
   min-height: 100vh;
 }
 
 .breadcrumb {
   font-size: 14px;
-  color: #666;
+  color: var(--muted);
   margin-bottom: 16px;
 }
 
 .arrow {
   margin: 0 4px;
-  color: #e63946;
+  color: var(--primary);
   font-weight: bold;
 }
 
 .section-title {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: var(--text);
+  font-family: var(--font-display);
   margin-bottom: 20px;
   padding-bottom: 8px;
-  border-bottom: 2px solid #e63946;
+  border-bottom: 2px solid var(--primary);
   display: inline-block;
 }
 
 .cards-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 24px;
-  flex-wrap: wrap;
 }
 
 .stat-card {
-  width: 260px;
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
   transition: all 0.3s ease;
   cursor: pointer;
+  animation: floatIn 0.5s ease both;
 }
 
 .stat-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  border-color: #e63946;
+  box-shadow: var(--shadow);
+  border-color: rgba(228, 61, 64, 0.5);
 }
 
 .card-icon-wrapper {
-  height: 120px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--primary);
 }
 
-.card-icon-wrapper.red {
-  background: #ffebee;
+.stat-card[data-tone="primary"] .card-icon-wrapper {
+  background: rgba(228, 61, 64, 0.12);
+  color: var(--primary);
 }
 
-.card-icon-wrapper.green {
-  background: #e8f5e9;
+.stat-card[data-tone="accent"] .card-icon-wrapper {
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--accent);
 }
 
-.card-icon-wrapper.blue {
-  background: #e3f2fd;
-}
-
-.card-icon {
-  font-size: 64px;
-  line-height: 1;
+.stat-card[data-tone="info"] .card-icon-wrapper {
+  background: rgba(13, 110, 253, 0.12);
+  color: #0d6efd;
 }
 
 .card-bottom {
   padding: 16px 20px;
   text-align: center;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border);
 }
 
 .count {
-  font-size: 48px;
+  font-size: 44px;
   font-weight: 700;
   line-height: 1;
   margin-bottom: 4px;
-}
-
-.red-text {
-  color: #e63946;
-}
-
-.green-text {
-  color: #2e7d32;
-}
-
-.blue-text {
-  color: #1976d2;
+  font-family: var(--font-display);
 }
 
 .label {
   font-size: 15px;
-  color: #555;
+  color: var(--muted);
   font-weight: 500;
+}
+
+.stat-card:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.stat-card:nth-child(3) {
+  animation-delay: 0.1s;
 }
 </style>

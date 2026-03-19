@@ -36,6 +36,7 @@
               <th>STATUS</th>
               <th>CREATE DATE</th>
               <th>UPDATE DATE</th>
+              <th>ROLE</th>
               <th>MODIFY</th>
             </tr>
           </thead>
@@ -53,12 +54,25 @@
               <td>{{ formatDate(admin.createdAt) }}</td>
               <td>{{ formatDate(admin.updatedAt) }}</td>
               <td>
+                <span :class="['role-badge', admin.role?.toLowerCase()]">
+                  {{ admin.role || 'Unknown' }}
+                </span>
+              </td>
+              <td>
                 <div class="action-buttons">
                   <button class="edit-btn" title="Edit" @click="editAdmin(admin.id)">
                     <span>✏️</span>
                   </button>
                   <button class="delete-btn" title="Delete" @click="openDeleteModal(admin.id)">
                     <span>🗑️</span>
+                  </button>
+
+                  <button
+                    v-if="admin.role?.toLowerCase() === 'admin'"
+                    class="action-btn make-user"
+                    title="Make User"
+                    @click="makeUser(admin.id)"
+                  >
                   </button>
                 </div>
               </td>
@@ -83,9 +97,10 @@
             </button>
           </div>
         </div>
-        <div v-if="toast.show" :class="['toast', toast.type]">
-          {{ toast.message }}
-        </div>
+      </div>
+
+      <div v-if="toast.show" :class="['toast', toast.type]">
+        {{ toast.message }}
       </div>
     </div>
   </DashboardLayout>
@@ -99,14 +114,15 @@ import api from '../services/api';
 const admins = ref([]);
 const loading = ref(true);
 const router = useRouter();
-const toast = ref({
-  show: true,
-  message: '',
-  type: 'success'
-});
 
 const showDeleteModal = ref(false);
 const selectedAdminId = ref(null);
+
+const toast = ref({
+  show: false,
+  message: '',
+  type: 'success'
+});
 
 onMounted(async () => {
   try {
@@ -129,7 +145,7 @@ const formatDate = (dateString) => {
   const day = String(date.getDate()).padStart(2, '0');
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}\n${hours}:${minutes} AM`;
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
 function goToCreate() {
@@ -154,32 +170,122 @@ async function confirmDelete() {
 
     if (res.data.success) {
       admins.value = admins.value.filter(admin => admin.id !== selectedAdminId.value);
-      alert('Admin muvaffaqiyatli o‘chirildi!');
+      showToast('Admin muvaffaqiyatli o‘chirildi!', 'success');
     } else {
-      alert(res.data.message || 'O‘chirishda xatolik yuz berdi');
+      showToast(res.data.message || 'O‘chirishda xatolik', 'error');
     }
   } catch (err) {
     console.error('Delete admin xatosi:', err);
-    alert(err.response?.data?.message || 'Serverda xatolik yuz berdi');
+    showToast(err.response?.data?.message || 'Serverda xatolik', 'error');
   } finally {
     closeDeleteModal();
   }
 }
 
+function editAdmin(adminId) {
+  router.push(`/admins/${adminId}/edit`);
+}
+
+async function makeUser(adminId) {
+  if (!confirm('Ushbu adminni oddiy userga aylantirmoqchimisiz?')) return;
+
+  try {
+    const res = await api.put(`/api/admins/${adminId}`, {
+      role: 'user' 
+    });
+
+    if (res.data.success) {
+      const adminIndex = admins.value.findIndex(a => a.id === adminId);
+      if (adminIndex !== -1) {
+        admins.value[adminIndex].role = 'user';
+      }
+      showToast('Admin oddiy userga aylantirildi!', 'success');
+    } else {
+      showToast(res.data.message || 'Aylantirishda xatolik', 'error');
+    }
+  } catch (err) {
+    console.error('Make user xatosi:', err);
+    showToast(err.response?.data?.message || 'Serverda xatolik', 'error');
+  }
+}
 
 function showToast(message, type = 'success') {
   toast.value = { show: true, message, type };
-
   setTimeout(() => {
     toast.value.show = false;
   }, 3000);
 }
-
-function editAdmin(adminId) {
-  router.push(`/admins/${adminId}/edit`);
-}
 </script>
 <style scoped>
+.role-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 90px;
+  text-align: center;
+  border: 1px solid;
+}
+
+.role-badge.admin {
+  background: rgba(245, 159, 0, 0.16);
+  color: #a16207;
+  border-color: rgba(245, 159, 0, 0.35);
+}
+
+.role-badge.user {
+  background: rgba(15, 118, 110, 0.12);
+  color: #0f766e;
+  border-color: rgba(15, 118, 110, 0.3);
+}
+
+/* Make User tugmasi */
+.action-btn.make-user {
+  color: #0f766e;
+  font-size: 20px;
+}
+
+.action-btn.make-user:hover {
+  transform: scale(1.35);
+  color: #0d6b63;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+  padding: 14px 24px;
+  border-radius: 10px;
+  color: white;
+  font-weight: 500;
+  box-shadow: var(--shadow-soft);
+  min-width: 280px;
+  animation: slideIn 0.4s ease-out;
+}
+
+.toast.success {
+  background: #16a34a;
+}
+
+.toast.error {
+  background: var(--primary-strong);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -191,25 +297,26 @@ function editAdmin(adminId) {
 }
 
 .modal {
-  background: white;
+  background: var(--surface-strong);
   border-radius: 12px;
   padding: 32px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow);
   text-align: center;
+  border: 1px solid var(--border);
 }
 
 .modal-title {
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 16px;
-  color: #212529;
+  color: var(--text);
 }
 
 .modal-text {
   font-size: 1rem;
-  color: #495057;
+  color: var(--muted);
   margin-bottom: 24px;
   line-height: 1.5;
 }
@@ -221,7 +328,7 @@ function editAdmin(adminId) {
 }
 
 .btn-cancel {
-  background: #6c757d;
+  background: #6b6b6b;
   color: white;
   border: none;
   padding: 12px 28px;
@@ -232,11 +339,11 @@ function editAdmin(adminId) {
 }
 
 .btn-cancel:hover {
-  background: #5a6268;
+  background: #5a5a5a;
 }
 
 .btn-delete {
-  background: #dc3545;
+  background: var(--primary-strong);
   color: white;
   border: none;
   padding: 12px 28px;
@@ -255,7 +362,7 @@ function editAdmin(adminId) {
   border-radius: 8px;
   color: white;
   font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-soft);
   min-width: 280px;
   max-width: 400px;
   animation: slideIn 0.4s ease-out;
@@ -263,11 +370,11 @@ function editAdmin(adminId) {
 }
 
 .toast.success {
-  background: #28a745;
+  background: #16a34a;
 }
 
 .toast.error {
-  background: #dc3545;
+  background: var(--primary-strong);
 }
 
 @keyframes slideIn {
@@ -289,18 +396,18 @@ function editAdmin(adminId) {
   padding: 6px;
   font-size: 18px;
   transition: transform 0.2s, color 0.2s;
-  color: #dc3545;
+  color: var(--primary-strong);
 }
 
 .delete-btn:hover {
   transform: scale(1.3);
-  color: #c82333;
+  color: var(--primary);
 }
 
 .admins-page {
   padding: 24px 32px;
-  background: #f5f5f5;
-  min-height: calc(100vh - 60px);
+  background: transparent;
+    min-height: calc(100vh - var(--navbar-height));
 }
 
 .breadcrumb {
@@ -309,7 +416,7 @@ function editAdmin(adminId) {
 }
 
 .breadcrumb a {
-  color: #e63946;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 500;
 }
@@ -320,12 +427,12 @@ function editAdmin(adminId) {
 
 .arrow {
   margin: 0 8px;
-  color: #333;
+  color: var(--primary);
   font-weight: bold;
 }
 
 .current {
-  color: #333;
+  color: var(--text);
   font-weight: 500;
 }
 
@@ -339,12 +446,13 @@ function editAdmin(adminId) {
 .page-title {
   font-size: 24px;
   font-weight: 700;
-  color: #333;
+  color: var(--text);
+  font-family: var(--font-display);
   margin: 0;
 }
 
 .add-btn {
-  background: #003d7a;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -359,9 +467,9 @@ function editAdmin(adminId) {
 }
 
 .add-btn:hover {
-  background: #002a54;
+  background: linear-gradient(135deg, #f2555a 0%, var(--primary-strong) 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 61, 122, 0.2);
+  box-shadow: 0 10px 16px rgba(228, 61, 64, 0.28);
 }
 
 .plus {
@@ -374,34 +482,37 @@ function editAdmin(adminId) {
 }
 
 .tab {
-  background: white;
+  background: var(--surface-strong);
   border: none;
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  color: #e63946;
+  color: var(--primary);
   border-bottom: 3px solid transparent;
 }
 
 .tab.active {
-  border-bottom-color: #e63946;
+  border-bottom-color: var(--primary);
 }
 
 .loading,
 .no-data {
   text-align: center;
   padding: 60px 20px;
-  color: #999;
-  background: white;
+  color: var(--muted);
+  background: var(--surface-strong);
   border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
 }
 
 .table-container {
-  background: white;
+  background: var(--surface-strong);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 
 .admins-table {
@@ -410,8 +521,8 @@ function editAdmin(adminId) {
 }
 
 .admins-table thead {
-  background: #f8f9fa;
-  border-bottom: 2px solid #e0e0e0;
+  background: #fff4e6;
+  border-bottom: 2px solid var(--border);
 }
 
 .admins-table th {
@@ -419,7 +530,7 @@ function editAdmin(adminId) {
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  color: #666;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -430,7 +541,7 @@ function editAdmin(adminId) {
 }
 
 .admins-table tbody tr:hover {
-  background: #f8f9fa;
+  background: #fff4e6;
 }
 
 .admins-table tbody tr:last-child {
@@ -440,7 +551,7 @@ function editAdmin(adminId) {
 .admins-table td {
   padding: 16px;
   font-size: 13px;
-  color: #333;
+  color: var(--text);
   vertical-align: middle;
 }
 
@@ -454,15 +565,15 @@ function editAdmin(adminId) {
 }
 
 .status-badge.active {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: rgba(15, 118, 110, 0.12);
+  color: #0f766e;
+  border: 1px solid rgba(15, 118, 110, 0.3);
 }
 
 .status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: rgba(228, 61, 64, 0.12);
+  color: var(--primary-strong);
+  border: 1px solid rgba(228, 61, 64, 0.3);
 }
 
 .action-buttons {
@@ -489,7 +600,7 @@ function editAdmin(adminId) {
 }
 
 .delete-btn {
-  color: #e63946;
+  color: var(--primary);
 }
 
 .delete-btn:hover {

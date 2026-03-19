@@ -283,7 +283,7 @@ function goBack() {
 }
 
 .breadcrumb-link {
-  color: #ff1744;
+  color: var(--primary);
   text-decoration: none;
 }
 
@@ -297,12 +297,15 @@ function goBack() {
 h2 {
   margin: 0;
   font-size: 1.8rem;
+  font-family: var(--font-display);
+  color: var(--text);
 }
 
 .edit-card {
-  background: white;
+  background: var(--surface-strong);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   padding: 2rem;
 }
 
@@ -319,14 +322,15 @@ label {
 .form-control {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 1rem;
+  background: var(--surface-strong);
 }
 
 .form-control:focus {
-  border-color: #ff1744;
-  box-shadow: 0 0 0 3px rgba(255,23,68,0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(228, 61, 64, 0.15);
 }
 
 .row {
@@ -352,7 +356,7 @@ label {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-soft);
 }
 
 .image-preview img {
@@ -365,7 +369,7 @@ label {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(220,53,69,0.9);
+  background: rgba(228, 61, 64, 0.9);
   color: white;
   border: none;
   border-radius: 50%;
@@ -382,7 +386,7 @@ label {
   flex-direction: column;
   align-items: center;
   padding: 2rem;
-  border: 2px dashed #dee2e6;
+  border: 2px dashed var(--border);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s;
@@ -390,13 +394,13 @@ label {
 }
 
 .upload-label:hover {
-  border-color: #ff1744;
-  background: #fff5f7;
+  border-color: var(--primary);
+  background: #fff4e6;
 }
 
 .upload-label i {
   font-size: 3rem;
-  color: #ff1744;
+  color: var(--primary);
   margin-bottom: 1rem;
 }
 
@@ -407,7 +411,7 @@ label {
 }
 
 .btn-save {
-  background: linear-gradient(135deg, #ff1744, #f50057);
+  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
   color: white;
   border: none;
   padding: 0.8rem 2rem;
@@ -416,7 +420,7 @@ label {
 }
 
 .btn-cancel {
-  background: #6c757d;
+  background: #6b6b6b;
   color: white;
   border: none;
   padding: 0.8rem 2rem;

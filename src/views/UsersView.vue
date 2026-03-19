@@ -18,7 +18,10 @@
             </button>
         </div>
 
-        <div class="table-wrapper">
+        <div v-if="loading" class="loading">Loading users...</div>
+        <div v-if="!loading && users.length === 0" class="no-data">No users found</div>
+
+        <div v-else class="table-wrapper">
             <table class="users-table">
                 <thead>
                     <tr>
@@ -26,43 +29,60 @@
                         <th>USERNAME</th>
                         <th>EMAIL</th>
                         <th>ADDRESS</th>
-                        <th>REMARK</th>
                         <th>PHONE</th>
                         <th>ACTIVE BY</th>
                         <th>STATUS</th>
+                        <th>ROLE</th>
                         <th>CREATE DATE</th>
                         <th>UPDATE DATE</th>
-                        <th>MODIFY</th>
+                        <th>ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(user, index) in users" :key="user.id">
                         <td>{{ index + 1 }}</td>
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.email }}</td>
+                        <td>{{ user.username || '-' }}</td>
+                        <td>{{ user.email || '-' }}</td>
                         <td>{{ user.address || '-' }}</td>
-                        <td>{{ user.remark || '-' }}</td>
-                        <td>{{ user.phone }}</td>
+                        <td>{{ user.phone || '-' }}</td>
                         <td>{{ user.activeBy || '-' }}</td>
                         <td>
                             <span :class="['status-badge', user.status?.toLowerCase()]">
                                 {{ user.status || 'Unknown' }}
                             </span>
                         </td>
+                        <td>
+                            <span :class="['role-badge', user.role?.toLowerCase()]">
+                                {{ user.role || 'Unknown' }}
+                            </span>
+                        </td>
                         <td>{{ formatDate(user.createdAt) }}</td>
                         <td>{{ formatDate(user.updatedAt) }}</td>
                         <td class="actions">
-                            <button class="action-btn view" title="View">📖</button>
-                            <button class="action-btn edit" title="Edit" @click=goToEdit(user.id)>✏️</button>
-                            <button class="action-btn delete" title="Delete">🗑️</button>
+                            <button class="action-btn edit" title="Edit" @click="goToEdit(user.id)">
+                                <Icon name="edit" :size="16" />
+                            </button>
+                            <button class="action-btn delete" title="Delete" @click="deleteUser(user.id)">
+                                <Icon name="trash" :size="16" />
+                            </button>
+
+                            <button
+                                v-if="user.role?.toLowerCase() !== 'admin'"
+                                class="action-btn make-admin"
+                                title="Make Admin"
+                                @click="makeAdmin(user.id)"
+                            >
+                                <Icon name="admin" :size="16" />
+                            </button>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div v-if="loading" class="loading">Loading users...</div>
-        <div v-if="!loading && users.length === 0" class="no-data">No users found</div>
+        <div v-if="toast.show" :class="['toast', toast.type]">
+            {{ toast.message }}
+        </div>
     </div>
 </template>
 
@@ -70,19 +90,25 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
+import Icon from '../components/Icon.vue'
 
 const router = useRouter()
 
 const users = ref([])
 const loading = ref(true)
 
+const toast = ref({
+    show: false,
+    message: '',
+    type: 'success'
+})
+
 onMounted(async () => {
     try {
         const res = await api.get('/api/users?page=1&limit=50')
-
         if (res.data.success && res.data.data?.users) {
             users.value = res.data.data.users.filter(u =>
-                u.role?.toLowerCase() === 'executive' || u.role === 'user'
+                u.role?.toLowerCase() === 'executive' || u.role?.toLowerCase() === 'user'
             )
         }
     } catch (err) {
@@ -104,196 +130,378 @@ const formatDate = (dateStr) => {
 const goToAdd = () => {
     router.push('/users/add')
 }
+
 const goToEdit = (userId) => {
     router.push(`/users/${userId}/edit`)
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Haqiqatan ham ushbu foydalanuvchini o\'chirmoqchimisiz?')) return
+
+    try {
+        const res = await api.delete(`/api/users/${userId}`)
+        if (res.data.success) {
+            users.value = users.value.filter(u => u.id !== userId)
+            showToast('Foydalanuvchi o\'chirildi!', 'success')
+        } else {
+            showToast(res.data.message || 'O\'chirishda xatolik', 'error')
+        }
+    } catch (err) {
+        console.error('Delete xatosi:', err)
+        showToast('Serverda xatolik yuz berdi', 'error')
+    }
+}
+
+async function makeAdmin(userId) {
+    if (!confirm('Ushbu foydalanuvchini admin qilmoqchimisiz?')) return
+
+    try {
+        const res = await api.put(`/api/users/${userId}`, {
+            role: 'admin'
+        })
+
+        if (res.data.success) {
+            const userIndex = users.value.findIndex(u => u.id === userId)
+            if (userIndex !== -1) {
+                users.value[userIndex].role = 'admin'
+            }
+            showToast('Foydalanuvchi admin qilib belgilandi!', 'success')
+        } else {
+            showToast(res.data.message || 'Admin qilishda xatolik', 'error')
+        }
+    } catch (err) {
+        console.error('Make admin xatosi:', err)
+        showToast(err.response?.data?.message || 'Serverda xatolik', 'error')
+    }
+}
+
+function showToast(message, type = 'success') {
+    toast.value = { show: true, message, type }
+    setTimeout(() => {
+        toast.value.show = false
+    }, 3000)
 }
 </script>
 
 <style scoped>
 .users-page {
     padding: 20px 24px;
-    background: #ffffff;
+    background: transparent;
+    min-height: calc(100vh - 64px);
+    font-family: var(--font-sans);
 }
 
 .breadcrumb {
-    font-size: 13px;
-    color: #666666;
-    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--muted);
 }
 
 .breadcrumb a {
-    color: #e63946;
+    color: var(--primary);
     text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
 }
 
 .breadcrumb a:hover {
+    color: var(--primary-strong);
     text-decoration: underline;
 }
 
 .separator {
-    margin: 0 6px;
-    color: #999;
-}
-
-.current {
-    color: #e63946;
-    font-weight: 500;
+    color: #adb5bd;
+    font-weight: bold;
 }
 
 .header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
 .section-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #333333;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: var(--font-display);
     margin: 0;
 }
 
 .add-btn {
-    background: #003d7a;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(228, 61, 64, 0.25);
 }
 
 .add-btn:hover {
-    background: #002a54;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 61, 122, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(228, 61, 64, 0.35);
 }
 
-.filter-info {
-    font-size: 14px;
-    color: #444;
+.tabs {
     margin-bottom: 16px;
-    font-weight: 500;
+    display: flex;
+    gap: 4px;
+}
+
+.tab {
+    background: transparent;
+    border: none;
+    padding: 8px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.25s ease;
+}
+
+.tab.active {
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+    background: rgba(228, 61, 64, 0.08);
+    border-radius: 8px 8px 0 0;
 }
 
 .table-wrapper {
     overflow-x: auto;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
 }
 
 .users-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
-    background: white;
+    font-size: 12.5px;
+    min-width: 1000px;
 }
 
 .users-table thead {
-    background: #e63946;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
     color: white;
 }
 
 .users-table th {
     padding: 10px 12px;
-    font-weight: 600;
     text-align: left;
-    border-bottom: 2px solid #c62828;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.6px;
     white-space: nowrap;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.08);
 }
 
 .users-table td {
     padding: 10px 12px;
     border-bottom: 1px solid #f0f0f0;
+    color: var(--text);
     vertical-align: middle;
 }
 
 .users-table tbody tr:hover {
-    background: #f9f9f9;
-}
-.tabs {
-  margin-bottom: 16px;
-}
-
-.tab {
-  background: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  color: #e63946;
-  border-bottom: 3px solid transparent;
-}
-
-.tab.active {
-  border-bottom-color: #e63946;
+    background: #fff4e6;
+    transition: background 0.2s ease;
 }
 
 .status-badge {
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
     display: inline-block;
-    min-width: 60px;
+    min-width: 70px;
     text-align: center;
+    border: 1px solid;
 }
 
-.status-badge.active,
-.status-badge.actve {
-    /* typo uchun */
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+.status-badge.active {
+    background: rgba(15, 118, 110, 0.12);
+    color: #0f766e;
+    border-color: rgba(15, 118, 110, 0.3);
 }
 
 .status-badge.inactive {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: rgba(228, 61, 64, 0.12);
+    color: var(--primary-strong);
+    border-color: rgba(228, 61, 64, 0.3);
 }
 
 .actions {
-    white-space: nowrap;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
 }
 
 .action-btn {
-    background: none;
-    border: none;
-    font-size: 16px;
+    background: transparent;
+    border: 1px solid transparent;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    font-size: 0;
     cursor: pointer;
-    margin: 0 4px;
-    padding: 4px;
+    transition: all 0.2s ease;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.action-btn.view {
-    color: #007bff;
-}
-
-.action-btn.edit {
-    color: #28a745;
-}
-
-.action-btn.delete {
-    color: #dc3545;
+.users-table td.actions {
+    white-space: nowrap;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 .action-btn:hover {
-    opacity: 0.7;
+    transform: translateY(-1px);
+}
+
+.action-btn.view {
+    color: #0d6efd;
+}
+
+.action-btn.edit {
+    color: #0f766e;
+    background: rgba(15, 118, 110, 0.12);
+    border-color: rgba(15, 118, 110, 0.18);
+}
+
+.action-btn.delete {
+    color: var(--primary-strong);
+    background: rgba(228, 61, 64, 0.12);
+    border-color: rgba(228, 61, 64, 0.18);
 }
 
 .loading,
 .no-data {
     text-align: center;
-    padding: 60px 0;
-    color: #777;
+    padding: 64px 20px;
+    color: var(--muted);
     font-size: 16px;
+    font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+    .users-page {
+        padding: 20px 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .add-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+    }
+}
+
+.role-badge {
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+    border: 1px solid;
+}
+
+.role-badge.admin {
+    background: rgba(245, 159, 0, 0.16);
+    color: #a16207;
+    border-color: rgba(245, 159, 0, 0.35);
+}
+
+.role-badge.user {
+    background: rgba(15, 118, 110, 0.12);
+    color: #0f766e;
+    border-color: rgba(15, 118, 110, 0.3);
+}
+
+.action-btn.make-admin {
+    color: #f59f00;
+    background: rgba(245, 159, 0, 0.15);
+    border-color: rgba(245, 159, 0, 0.25);
+}
+
+.action-btn.make-admin:hover {
+    background: #f59f00;
+    color: #ffffff;
+}
+
+.action-btn.edit:hover {
+    background: #0f766e;
+    color: #ffffff;
+}
+
+.action-btn.delete:hover {
+    background: var(--primary-strong);
+    color: #ffffff;
+}
+
+.toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1000;
+    padding: 14px 24px;
+    border-radius: 10px;
+    color: white;
+    font-weight: 500;
+    box-shadow: var(--shadow-soft);
+    min-width: 280px;
+    animation: slideIn 0.4s ease-out;
+}
+
+.toast.success {
+    background: #16a34a;
+}
+
+.toast.error {
+    background: var(--primary-strong);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 </style>

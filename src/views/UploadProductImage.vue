@@ -200,7 +200,6 @@ function goBack() {
     padding: 0;
 }
 
-/* Breadcrumb */
 .breadcrumb {
     display: flex;
     align-items: center;
@@ -233,7 +232,6 @@ function goBack() {
     font-weight: 500;
 }
 
-/* Upload Card */
 .upload-card {
     background: white;
     border-radius: 12px;
@@ -284,7 +282,6 @@ function goBack() {
     padding: 2rem;
 }
 
-/* Current Images */
 .current-images {
     margin-bottom: 2rem;
     padding-bottom: 2rem;
@@ -298,7 +295,6 @@ function goBack() {
     margin-bottom: 1rem;
 }
 
-/* Upload Zone */
 .upload-zone {
     margin-bottom: 2rem;
 }
@@ -426,7 +422,6 @@ function goBack() {
     white-space: nowrap;
 }
 
-/* Info Alert */
 .info-alert {
     display: flex;
     align-items: flex-start;
@@ -448,7 +443,6 @@ function goBack() {
     color: #1565c0;
 }
 
-/* Action Buttons */
 .action-buttons {
     display: flex;
     gap: 1rem;
@@ -504,7 +498,6 @@ function goBack() {
     cursor: not-allowed;
 }
 
-/* Loading */
 .loading-wrapper {
     text-align: center;
     padding: 5rem 2rem;
@@ -513,7 +506,6 @@ function goBack() {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .card-header {
         flex-direction: column;

@@ -39,33 +39,6 @@
           <input v-model="form.password" type="password" placeholder="strongpass123" required />
         </div>
 
-        <!-- Role tanlash -->
-        <div class="input-group role-group">
-          <label>Rol tanlang *</label>
-          <div class="role-options">
-            <label class="radio-label">
-              <input
-                type="radio"
-                v-model="form.role"
-                value="admin"
-                name="role"
-                required
-              />
-              <span>Admin</span>
-            </label>
-
-            <label class="radio-label">
-              <input
-                type="radio"
-                v-model="form.role"
-                value="user"
-                name="role"
-              />
-              <span>User</span>
-            </label>
-          </div>
-        </div>
-
         <button type="submit" class="login-btn" :disabled="authStore.loading">
           {{ authStore.loading ? 'Creating...' : 'Register' }}
         </button>
@@ -93,14 +66,13 @@ const form = ref({
   username: '',
   email: '',
   phone: '',
-  password: '',
-  role: 'user' 
+  password: ''
 });
 
 const handleRegister = async () => {
   if (!form.value.firstname || !form.value.name || !form.value.username ||
-      !form.value.email || !form.value.password || !form.value.role) {
-    authStore.error = 'Barcha majburiy maydonlarni to‘ldiring';
+      !form.value.email || !form.value.phone || !form.value.password) {
+    authStore.error = 'Barcha maydonlarni to‘ldiring';
     return;
   }
 
@@ -110,9 +82,10 @@ const handleRegister = async () => {
     username: form.value.username.trim(),
     email: form.value.email.trim(),
     phone: form.value.phone.trim(),
-    password: form.value.password,
-    role: form.value.role 
+    password: form.value.password
   };
+
+  console.log('Yuborilayotgan payload:', payload);
 
   const result = await authStore.register(payload);
 
@@ -123,131 +96,112 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-
-.role-group {
-  margin-bottom: 1.5rem;
-}
-
-.role-options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.radio-label {
+.login-container {
+  min-height: 100vh;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  color: #333;
-  cursor: pointer;
-}
-
-.radio-label input[type="radio"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #e63946;
-}
-.login-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f5f5f5;
+  justify-content: center;
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(228, 61, 64, 0.14), transparent 60%),
+    radial-gradient(800px 500px at 90% -10%, rgba(15, 118, 110, 0.14), transparent 60%),
+    var(--bg);
 }
 
 .login-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    padding: 2.5rem 2rem;
-    width: 100%;
-    max-width: 420px;
-    border-top: 4px solid #e63946;
+  background: var(--surface-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid var(--border);
+  animation: floatIn 0.5s ease both;
 }
 
 .logo-section {
-    text-align: center;
-    margin-bottom: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .logo {
-    max-width: 180px;
-    margin-bottom: 1rem;
+  max-width: 180px;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 6px 10px rgba(31, 27, 22, 0.12));
 }
 
 h1 {
-    font-size: 1.5rem;
-    color: #333;
-    margin: 0;
+  font-size: 1.5rem;
+  color: var(--text);
+  margin: 0;
+  font-family: var(--font-display);
 }
 
 .error {
-    color: #e63946;
-    text-align: center;
-    margin-bottom: 1rem;
+  color: var(--primary-strong);
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
 .input-group {
-    margin-bottom: 1.3rem;
+  margin-bottom: 1.3rem;
 }
 
 label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #444;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 input {
-    width: 100%;
-    padding: 0.9rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
+  width: 100%;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 1rem;
+  background: var(--surface-strong);
 }
 
 input:focus {
-    outline: none;
-    border-color: #e63946;
-    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(228, 61, 64, 0.15);
 }
 
 .login-btn {
-    width: 100%;
-    padding: 1rem;
-    background: #e63946;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: 0.2s;
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 .login-btn:hover {
-    background: #d00000;
+  background: linear-gradient(135deg, #f2555a 0%, var(--primary-strong) 100%);
 }
 
 .login-btn:disabled {
-    background: #f48c96;
-    cursor: not-allowed;
+  background: rgba(228, 61, 64, 0.5);
+  cursor: not-allowed;
 }
 
 .register-link {
-    text-align: center;
-    margin-top: 1.5rem;
-    color: #666;
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--muted);
 }
 
 .register-link a {
-    color: #e63946;
-    text-decoration: none;
-    font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
 }
 
 .register-link a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 </style>

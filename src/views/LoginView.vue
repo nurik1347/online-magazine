@@ -53,17 +53,21 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(228, 61, 64, 0.14), transparent 60%),
+    radial-gradient(800px 500px at 90% -10%, rgba(15, 118, 110, 0.14), transparent 60%),
+    var(--bg);
 }
 
 .login-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  background: var(--surface-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
   padding: 2.5rem 2rem;
   width: 100%;
   max-width: 420px;
-  border-top: 4px solid #e63946;
+  border: 1px solid var(--border);
+  animation: floatIn 0.5s ease both;
 }
 
 .logo-section {
@@ -74,16 +78,18 @@ const handleLogin = async () => {
 .logo {
   max-width: 180px;
   margin-bottom: 1rem;
+  filter: drop-shadow(0 6px 10px rgba(31, 27, 22, 0.12));
 }
 
 h1 {
   font-size: 1.5rem;
-  color: #333;
+  color: var(--text);
   margin: 0;
+  font-family: var(--font-display);
 }
 
 .error {
-  color: #e63946;
+  color: var(--primary-strong);
   text-align: center;
   margin-bottom: 1rem;
 }
@@ -96,27 +102,28 @@ label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #444;
+  color: var(--muted);
 }
 
 input {
   width: 100%;
   padding: 0.9rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
+  background: var(--surface-strong);
 }
 
 input:focus {
   outline: none;
-  border-color: #e63946;
-  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(228, 61, 64, 0.15);
 }
 
 .login-btn {
   width: 100%;
   padding: 1rem;
-  background: #e63946;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -126,22 +133,22 @@ input:focus {
 }
 
 .login-btn:hover {
-  background: #d00000;
+  background: linear-gradient(135deg, #f2555a 0%, var(--primary-strong) 100%);
 }
 
 .login-btn:disabled {
-  background: #f48c96;
+  background: rgba(228, 61, 64, 0.5);
   cursor: not-allowed;
 }
 
 .register-link {
   text-align: center;
   margin-top: 1.5rem;
-  color: #666;
+  color: var(--muted);
 }
 
 .register-link a {
-  color: #e63946;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 500;
 }

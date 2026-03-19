@@ -128,36 +128,37 @@ const handleUpdate = async () => {
 <style scoped>
 .form-page {
   padding: 20px 24px;
-  background: #fff;
+  background: transparent;
 }
 
 .breadcrumb {
   font-size: 13px;
-  color: #666;
+  color: var(--muted);
   margin-bottom: 12px;
 }
 
 .breadcrumb a {
-  color: #e63946;
+  color: var(--primary);
   text-decoration: none;
 }
 
 .separator {
   margin: 0 6px;
-  color: #999;
+  color: var(--muted);
 }
 
 .current {
-  color: #e63946;
+  color: var(--primary);
   font-weight: 500;
 }
 
 .page-title {
   font-size: 22px;
   font-weight: 600;
-  color: #333;
+  color: var(--text);
+  font-family: var(--font-display);
   margin-bottom: 24px;
-  border-bottom: 2px solid #e63946;
+  border-bottom: 2px solid var(--primary);
   padding-bottom: 8px;
   display: inline-block;
 }
@@ -173,7 +174,7 @@ const handleUpdate = async () => {
 .form-group label {
   display: block;
   font-size: 14px;
-  color: #e63946;
+  color: var(--primary);
   font-weight: 500;
   margin-bottom: 6px;
 }
@@ -181,15 +182,16 @@ const handleUpdate = async () => {
 .form-group input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 14px;
+  background: var(--surface-strong);
 }
 
 .form-group input:focus {
-  border-color: #e63946;
+  border-color: var(--primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(230, 57, 70, 0.2);
+  box-shadow: 0 0 0 2px rgba(228, 61, 64, 0.2);
 }
 
 .status-group {
@@ -206,7 +208,7 @@ const handleUpdate = async () => {
   display: flex;
   align-items: center;
   cursor: pointer;
-  color: #333;
+  color: var(--text);
   font-size: 14px;
 }
 
@@ -215,17 +217,17 @@ const handleUpdate = async () => {
 }
 
 .status-active {
-  color: #2e7d32;
+  color: var(--accent);
   font-weight: 600;
 }
 
 .status-inactive {
-  color: #d32f2f;
+  color: var(--primary-strong);
   font-weight: 600;
 }
 
 .submit-btn {
-  background: #e63946;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
   color: white;
   border: none;
   padding: 10px 24px;
@@ -236,11 +238,11 @@ const handleUpdate = async () => {
 }
 
 .submit-btn:hover {
-  background: #c62828;
+  background: linear-gradient(135deg, #f2555a 0%, var(--primary-strong) 100%);
 }
 
 .submit-btn:disabled {
-  background: #f48c96;
+  background: rgba(228, 61, 64, 0.5);
   cursor: not-allowed;
 }
 </style>

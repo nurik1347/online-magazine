@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, ref, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import api from '../services/api';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
@@ -9,25 +9,45 @@ import 'swiper/css/pagination';
 import { Navigation, Pagination } from 'swiper/modules';
 
 const router = useRouter();
+const route = useRoute();
 const products = ref([]);
 const loading = ref(true);
+const categoryId = computed(() => route.params.id || null);
+const isCategoryView = computed(() => Boolean(categoryId.value));
+const pageTitle = computed(() => (isCategoryView.value ? 'Category Products' : 'Barcha Mahsulotlar'));
+const pageSubtitle = computed(() => {
+  if (isCategoryView.value) {
+    return `${products.value.length} ta mahsulot`;
+  }
+  return `${products.value.length} ta mahsulot mavjud`;
+});
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://student.jamshidibodullayev.uz';
 
-onMounted(async () => {
+watch(categoryId, async () => {
+  loading.value = true;
   try {
-    const res = await api.get('/api/products');
+    const endpoint = categoryId.value
+      ? `/api/products/category/${categoryId.value}?page=1&limit=1000`
+      : '/api/products?page=1&limit=1000';
+    const res = await api.get(endpoint);
     console.log('Products data:', res.data);
 
     if (res.data.success && res.data.data?.products) {
       products.value = res.data.data.products;
+    } else if (res.data.success && Array.isArray(res.data.data)) {
+      products.value = res.data.data;
+    } else if (Array.isArray(res.data?.products)) {
+      products.value = res.data.products;
+    } else {
+      products.value = [];
     }
   } catch (err) {
     console.error('Products yuklanmadi:', err);
   } finally {
     loading.value = false;
   }
-});
+}, { immediate: true });
 
 function goToAddProduct() {
   router.push('/products/add');
@@ -83,13 +103,20 @@ function getImageUrl(image) {
     <div class="breadcrumb">
       <router-link to="/" class="breadcrumb-link">Home</router-link>
       <i class="bi bi-chevron-right"></i>
-      <span class="breadcrumb-current">Mahsulotlar</span>
+      <template v-if="isCategoryView">
+        <router-link to="/categories" class="breadcrumb-link">Categories</router-link>
+        <i class="bi bi-chevron-right"></i>
+        <span class="breadcrumb-current">Category Products</span>
+      </template>
+      <template v-else>
+        <span class="breadcrumb-current">Mahsulotlar</span>
+      </template>
     </div>
 
     <div class="page-header">
       <div>
-        <h1 class="page-title">Barcha Mahsulotlar</h1>
-        <p class="page-subtitle">{{ products.length }} ta mahsulot mavjud</p>
+        <h1 class="page-title">{{ pageTitle }}</h1>
+        <p class="page-subtitle">{{ pageSubtitle }}</p>
       </div>
       <button class="btn-add-product" @click="goToAddProduct">
         <i class="bi bi-plus-circle"></i>
@@ -190,6 +217,7 @@ function getImageUrl(image) {
   max-width: 1400px;
   margin: 0 auto;
   padding: 1.5rem;
+  background: transparent;
 }
 
 .breadcrumb {
@@ -198,20 +226,21 @@ function getImageUrl(image) {
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   padding: 1rem 1.5rem;
-  background: white;
+  background: var(--surface);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 
 .breadcrumb-link {
-  color: #ff1744;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .breadcrumb-link:hover {
-  color: #d5003f;
+  color: var(--primary-strong);
 }
 
 .breadcrumb i {
@@ -220,7 +249,7 @@ function getImageUrl(image) {
 }
 
 .breadcrumb-current {
-  color: #495057;
+  color: var(--muted);
   font-weight: 500;
 }
 
@@ -230,9 +259,10 @@ function getImageUrl(image) {
   align-items: center;
   margin-bottom: 2.5rem;
   padding: 1.5rem;
-  background: white;
+  background: var(--surface-strong);
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -240,18 +270,19 @@ function getImageUrl(image) {
 .page-title {
   font-size: 2.1rem;
   font-weight: 700;
-  color: #212529;
+  color: var(--text);
+  font-family: var(--font-display);
   margin: 0;
 }
 
 .page-subtitle {
-  color: #6c757d;
+  color: var(--muted);
   font-size: 1rem;
   margin-top: 0.25rem;
 }
 
 .btn-add-product {
-  background: linear-gradient(135deg, #ff1744 0%, #f50057 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
   color: white;
   border: none;
   padding: 0.85rem 1.75rem;
@@ -262,12 +293,12 @@ function getImageUrl(image) {
   gap: 0.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 18px rgba(255, 23, 68, 0.3);
+  box-shadow: 0 10px 20px rgba(228, 61, 64, 0.25);
 }
 
 .btn-add-product:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(255, 23, 68, 0.45);
+  box-shadow: 0 14px 28px rgba(228, 61, 64, 0.35);
 }
 
 .loading-wrapper {
@@ -288,25 +319,28 @@ function getImageUrl(image) {
 }
 
 .product-card {
-  background: white;
+  background: var(--surface-strong);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
   transition: all 0.35s ease;
   display: flex;
   flex-direction: column;
+  animation: floatIn 0.45s ease both;
 }
 
 .product-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow);
 }
 
 .card-image {
   position: relative;
   width: 100%;
-  padding-top: 100%;
-  background: #f8f9fa;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, rgba(228, 61, 64, 0.08), rgba(15, 118, 110, 0.08));
+  border-bottom: 1px solid var(--border);
 }
 
 .product-swiper {
@@ -314,32 +348,62 @@ function getImageUrl(image) {
   inset: 0;
   width: 100%;
   height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+:deep(.swiper-slide) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .swiper-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(31, 27, 22, 0.12);
   transition: transform 0.5s ease;
 }
 
 .product-card:hover .swiper-image {
-  transform: scale(1.07);
+  transform: scale(1.03);
 }
 
 :deep(.swiper-button-next),
 :deep(.swiper-button-prev) {
-  color: white !important;
-  background: rgba(0, 0, 0, 0.45);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  transition: all 0.3s;
+  color: #1f1b16 !important;
+  background: transparent;
+  border: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  opacity: 0.75;
+  top: 50%;
+  margin-top: 0;
+  transform: translateY(-50%);
+  transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+:deep(.swiper-button-next:after),
+:deep(.swiper-button-prev:after) {
+  font-size: 24px;
+  font-weight: 700;
 }
 
 :deep(.swiper-button-next:hover),
 :deep(.swiper-button-prev:hover) {
-  background: rgba(0, 0, 0, 0.75);
+  opacity: 1;
+  color: var(--primary) !important;
+  transform: translateY(-50%) scale(1.02);
+}
+
+:deep(.swiper-button-disabled) {
+  opacity: 0.2;
 }
 
 :deep(.swiper-pagination-bullet) {
@@ -369,11 +433,11 @@ function getImageUrl(image) {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 14px rgba(31, 27, 22, 0.18);
 }
 
 .badge-sale {
-  background: linear-gradient(135deg, #ff1744 0%, #f50057 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
   color: white;
 }
 
@@ -393,7 +457,7 @@ function getImageUrl(image) {
 
 .product-brand {
   font-size: 0.9rem;
-  color: #6c757d;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   font-weight: 600;
@@ -402,7 +466,7 @@ function getImageUrl(image) {
 .product-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #212529;
+  color: var(--text);
   margin: 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -412,7 +476,7 @@ function getImageUrl(image) {
 
 .product-description {
   font-size: 0.95rem;
-  color: #495057;
+  color: var(--muted);
   line-height: 1.5;
   margin: 0;
   display: -webkit-box;
@@ -431,12 +495,12 @@ function getImageUrl(image) {
 .price-current {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #ff1744;
+  color: var(--primary);
 }
 
 .price-old {
   font-size: 1.1rem;
-  color: #6c757d;
+  color: var(--muted);
   text-decoration: line-through;
 }
 
@@ -446,10 +510,10 @@ function getImageUrl(image) {
   align-items: center;
   gap: 0.6rem;
   padding: 0.6rem;
-  background: #f8f9fa;
+  background: #fff4e6;
   border-radius: 10px;
   font-size: 0.95rem;
-  color: #495057;
+  color: var(--text);
 }
 
 /* Actions */
@@ -475,35 +539,35 @@ function getImageUrl(image) {
 }
 
 .btn-primary {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: rgba(13, 110, 253, 0.12);
+  color: #0d6efd;
 }
 
 .btn-primary:hover {
-  background: #1976d2;
+  background: #0d6efd;
   color: white;
   transform: translateY(-2px);
 }
 
 .btn-secondary {
-  background: #fff3e0;
-  color: #f57c00;
+  background: rgba(245, 159, 0, 0.15);
+  color: #b26a00;
 }
 
 .btn-secondary:hover {
-  background: #f57c00;
+  background: #f59f00;
   color: white;
   transform: translateY(-2px);
 }
 
 .btn-danger {
-  background: #ffebee;
-  color: #c62828;
+  background: rgba(228, 61, 64, 0.12);
+  color: var(--primary-strong);
   padding: 0.7rem;
 }
 
 .btn-danger:hover {
-  background: #c62828;
+  background: var(--primary-strong);
   color: white;
   transform: translateY(-2px);
 }
@@ -512,9 +576,10 @@ function getImageUrl(image) {
 .empty-state {
   text-align: center;
   padding: 6rem 2rem;
-  background: white;
+  background: var(--surface-strong);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 
 .empty-icon {
@@ -531,18 +596,18 @@ function getImageUrl(image) {
 .empty-title {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #212529;
+  color: var(--text);
   margin-bottom: 1rem;
 }
 
 .empty-text {
-  color: #6c757d;
+  color: var(--muted);
   font-size: 1.1rem;
   margin-bottom: 2rem;
 }
 
 .btn-empty-action {
-  background: linear-gradient(135deg, #ff1744 0%, #f50057 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
   color: white;
   border: none;
   padding: 1rem 2.2rem;
@@ -551,12 +616,12 @@ function getImageUrl(image) {
   font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 6px 20px rgba(255, 23, 68, 0.35);
+  box-shadow: 0 10px 24px rgba(228, 61, 64, 0.35);
 }
 
 .btn-empty-action:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(255, 23, 68, 0.45);
+  box-shadow: 0 16px 32px rgba(228, 61, 64, 0.45);
 }
 
 /* Responsive */
@@ -588,6 +653,17 @@ function getImageUrl(image) {
 
   .btn-action {
     width: 100%;
+  }
+
+  :deep(.swiper-button-next),
+  :deep(.swiper-button-prev) {
+    width: 22px;
+    height: 22px;
+  }
+
+  :deep(.swiper-button-next:after),
+  :deep(.swiper-button-prev:after) {
+    font-size: 20px;
   }
 }
 
