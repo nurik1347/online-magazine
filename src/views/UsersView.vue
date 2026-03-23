@@ -41,13 +41,10 @@
                         <th>ID</th>
                         <th>USERNAME</th>
                         <th>EMAIL</th>
-                        <th>ADDRESS</th>
                         <th>PHONE</th>
-                        <th>ACTIVE BY</th>
                         <th>STATUS</th>
                         <th>ROLE</th>
                         <th>CREATE DATE</th>
-                        <th>UPDATE DATE</th>
                         <th v-if="isAdmin">ACTIONS</th>
                     </tr>
                 </thead>
@@ -70,13 +67,10 @@
                         <th>ID</th>
                         <th>USERNAME</th>
                         <th>EMAIL</th>
-                        <th>ADDRESS</th>
                         <th>PHONE</th>
-                        <th>ACTIVE BY</th>
                         <th>STATUS</th>
                         <th>ROLE</th>
                         <th>CREATE DATE</th>
-                        <th>UPDATE DATE</th>
                         <th v-if="isAdmin">ACTIONS</th>
                     </tr>
                 </thead>
@@ -85,9 +79,7 @@
                         <td>{{ index + 1 }}</td>
                         <td>{{ user.username || '-' }}</td>
                         <td>{{ user.email || '-' }}</td>
-                        <td>{{ user.address || '-' }}</td>
                         <td>{{ user.phone || '-' }}</td>
-                        <td>{{ user.activeBy || '-' }}</td>
                         <td>
                             <span :class="['status-badge', user.status?.toLowerCase()]">
                                 {{ user.status || 'Unknown' }}
@@ -99,7 +91,6 @@
                             </span>
                         </td>
                         <td>{{ formatDate(user.createdAt) }}</td>
-                        <td>{{ formatDate(user.updatedAt) }}</td>
                         <td v-if="isAdmin" class="actions">
                             <button class="action-btn edit" title="Edit" @click="goToEdit(user.id)">
                                 <Icon name="edit" :size="16" />
@@ -142,7 +133,7 @@ const users = ref([])
 const loading = ref(true)
 const search = ref('')
 const isAdmin = computed(() => authStore.isAdmin)
-const skeletonCols = computed(() => (isAdmin.value ? 11 : 10))
+const skeletonCols = computed(() => (isAdmin.value ? 8 : 7))
 
 const toast = ref({
     show: false,
@@ -178,13 +169,10 @@ const filteredUsers = computed(() => {
         const haystack = [
             user.username,
             user.email,
-            user.address,
             user.phone,
-            user.activeBy,
             user.status,
             user.role,
-            user.createdAt,
-            user.updatedAt
+            user.createdAt
         ]
             .map(value => (value ?? '').toString().toLowerCase())
             .join(' ')
@@ -271,25 +259,19 @@ function exportUsers() {
     const headers = [
         'Username',
         'Email',
-        'Address',
         'Phone',
-        'Active By',
         'Status',
         'Role',
-        'Create Date',
-        'Update Date'
+        'Create Date'
     ]
 
     const rows = filteredUsers.value.map(user => [
         user.username,
         user.email,
-        user.address,
         user.phone,
-        user.activeBy,
         user.status,
         user.role,
-        user.createdAt,
-        user.updatedAt
+        user.createdAt
     ])
 
     const csv = [
@@ -451,7 +433,7 @@ function exportUsers() {
     width: 100%;
     border-collapse: collapse;
     font-size: 12.5px;
-    min-width: 900px;
+    min-width: 760px;
     table-layout: auto;
 }
 
@@ -489,19 +471,20 @@ function exportUsers() {
 
 .users-table th:nth-child(1),
 .users-table td:nth-child(1),
+.users-table th:nth-child(5),
+.users-table td:nth-child(5),
+.users-table th:nth-child(6),
+.users-table td:nth-child(6),
 .users-table th:nth-child(7),
-.users-table td:nth-child(7),
-.users-table th:nth-child(8),
-.users-table td:nth-child(8) {
+.users-table td:nth-child(7) {
     text-align: center;
 }
 
-.users-table td:not(:nth-child(3)):not(:nth-child(4)) {
+.users-table td:not(:nth-child(3)) {
     white-space: nowrap;
 }
 
-.users-table td:nth-child(3),
-.users-table td:nth-child(4) {
+.users-table td:nth-child(3) {
     white-space: normal;
     word-break: break-word;
     line-height: 1.35;

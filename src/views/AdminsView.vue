@@ -43,7 +43,6 @@
               <th>PHONE</th>
               <th>STATUS</th>
               <th>CREATE DATE</th>
-              <th>UPDATE DATE</th>
               <th>ROLE</th>
               <th>MODIFY</th>
             </tr>
@@ -70,7 +69,6 @@
               <th>PHONE</th>
               <th>STATUS</th>
               <th>CREATE DATE</th>
-              <th>UPDATE DATE</th>
               <th>ROLE</th>
               <th>MODIFY</th>
             </tr>
@@ -87,7 +85,6 @@
                 </span>
               </td>
               <td>{{ formatDate(admin.createdAt) }}</td>
-              <td>{{ formatDate(admin.updatedAt) }}</td>
               <td>
                 <span :class="['role-badge', admin.role?.toLowerCase()]">
                   {{ admin.role || 'Unknown' }}
@@ -151,7 +148,7 @@ const admins = ref([]);
 const loading = ref(true);
 const router = useRouter();
 const search = ref('');
-const skeletonCols = 9;
+const skeletonCols = 8;
 
 const showDeleteModal = ref(false);
 const selectedAdminId = ref(null);
@@ -191,8 +188,7 @@ const filteredAdmins = computed(() => {
       admin.phone,
       admin.status,
       admin.role,
-      admin.createdAt,
-      admin.updatedAt
+      admin.createdAt
     ]
       .map(value => (value ?? '').toString().toLowerCase())
       .join(' ');
@@ -284,12 +280,15 @@ function showToast(message, type = 'success') {
 .role-badge {
   padding: 6px 14px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  display: inline-block;
-  min-width: 90px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
   text-align: center;
   border: 1px solid;
+  line-height: 1;
 }
 
 .role-badge.admin {
@@ -595,7 +594,7 @@ function showToast(message, type = 'success') {
 .admins-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  min-width: 820px;
 }
 
 .admins-table thead {
@@ -633,13 +632,41 @@ function showToast(message, type = 'success') {
   vertical-align: middle;
 }
 
+.admins-table th:nth-child(1),
+.admins-table td:nth-child(1),
+.admins-table th:nth-child(5),
+.admins-table td:nth-child(5),
+.admins-table th:nth-child(6),
+.admins-table td:nth-child(6),
+.admins-table th:nth-child(7),
+.admins-table td:nth-child(7),
+.admins-table th:nth-child(8),
+.admins-table td:nth-child(8) {
+  text-align: center;
+}
+
+.admins-table td:not(:nth-child(2)):not(:nth-child(3)) {
+  white-space: nowrap;
+}
+
+.admins-table td:nth-child(2),
+.admins-table td:nth-child(3) {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
 .status-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 6px 16px;
+  min-width: 86px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
   text-transform: capitalize;
+  line-height: 1;
 }
 
 .status-badge.active {
@@ -659,6 +686,7 @@ function showToast(message, type = 'success') {
   gap: 8px;
   align-items: center;
   flex-wrap: nowrap;
+  justify-content: center;
 }
 
 .edit-btn,
