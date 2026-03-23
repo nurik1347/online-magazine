@@ -16,6 +16,14 @@
                     type="search"
                     placeholder="Search users..."
                 />
+                <button class="btn-outline" :disabled="loading" @click="fetchUsers">
+                    <Icon name="refresh" :size="16" />
+                    Yangilash
+                </button>
+                <button v-if="isAdmin && filteredUsers.length" class="export-btn" @click="exportUsers">
+                    <i class="bi bi-download"></i>
+                    CSV
+                </button>
                 <button v-if="isAdmin" class="add-btn" @click="goToAdd">+ Add</button>
             </div>
         </div>
@@ -26,8 +34,34 @@
             </button>
         </div>
 
-        <div v-if="loading" class="loading">Loading users...</div>
-        <div v-if="!loading && filteredUsers.length === 0" class="no-data">No users found</div>
+        <div v-if="loading" class="table-wrapper table-skeleton" aria-hidden="true">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>USERNAME</th>
+                        <th>EMAIL</th>
+                        <th>ADDRESS</th>
+                        <th>PHONE</th>
+                        <th>ACTIVE BY</th>
+                        <th>STATUS</th>
+                        <th>ROLE</th>
+                        <th>CREATE DATE</th>
+                        <th>UPDATE DATE</th>
+                        <th v-if="isAdmin">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="n in 8" :key="`skeleton-${n}`">
+                        <td v-for="c in skeletonCols" :key="c">
+                            <div class="skeleton skeleton-line"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div v-else-if="filteredUsers.length === 0" class="no-data">No users found</div>
 
         <div v-else class="table-wrapper">
             <table class="users-table">
@@ -108,6 +142,7 @@ const users = ref([])
 const loading = ref(true)
 const search = ref('')
 const isAdmin = computed(() => authStore.isAdmin)
+const skeletonCols = computed(() => (isAdmin.value ? 11 : 10))
 
 const toast = ref({
     show: false,
@@ -116,6 +151,11 @@ const toast = ref({
 })
 
 onMounted(async () => {
+    await fetchUsers()
+})
+
+async function fetchUsers() {
+    loading.value = true
     try {
         const res = await api.get('/api/users?page=1&limit=1000')
         if (res.data.success && res.data.data?.users) {
@@ -128,7 +168,7 @@ onMounted(async () => {
     } finally {
         loading.value = false
     }
-})
+}
 
 const filteredUsers = computed(() => {
     const query = search.value.trim().toLowerCase()
@@ -216,6 +256,55 @@ function showToast(message, type = 'success') {
         toast.value.show = false
     }, 3000)
 }
+
+function csvEscape(value) {
+    const str = (value ?? '').toString()
+    if (/[",\n]/.test(str)) {
+        return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+}
+
+function exportUsers() {
+    if (!filteredUsers.value.length) return
+
+    const headers = [
+        'Username',
+        'Email',
+        'Address',
+        'Phone',
+        'Active By',
+        'Status',
+        'Role',
+        'Create Date',
+        'Update Date'
+    ]
+
+    const rows = filteredUsers.value.map(user => [
+        user.username,
+        user.email,
+        user.address,
+        user.phone,
+        user.activeBy,
+        user.status,
+        user.role,
+        user.createdAt,
+        user.updatedAt
+    ])
+
+    const csv = [
+        headers.join(','),
+        ...rows.map(row => row.map(csvEscape).join(','))
+    ].join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `users_${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+}
 </script>
 
 <style scoped>
@@ -297,6 +386,28 @@ function showToast(message, type = 'success') {
     box-shadow: 0 12px 24px rgba(228, 61, 64, 0.35);
 }
 
+.export-btn {
+    background: var(--surface-strong);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.export-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
+}
+
 .tabs {
     margin-bottom: 16px;
     display: flex;
@@ -330,6 +441,10 @@ function showToast(message, type = 'success') {
     box-shadow: var(--shadow-soft);
     background: var(--surface-strong);
     border: 1px solid var(--border);
+}
+
+.table-skeleton .skeleton-line {
+    height: 12px;
 }
 
 .users-table {
@@ -502,6 +617,11 @@ function showToast(message, type = 'success') {
     }
 
     .add-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .export-btn {
         width: 100%;
         justify-content: center;
     }

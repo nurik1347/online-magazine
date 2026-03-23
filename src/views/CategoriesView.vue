@@ -19,6 +19,10 @@
           type="search"
           placeholder="Search categories..."
         />
+        <button class="btn-outline" :disabled="loading" @click="fetchCategories">
+          <Icon name="refresh" :size="16" />
+          Yangilash
+        </button>
       </div>
     </div>
 
@@ -59,7 +63,17 @@
       <div v-if="success" class="form-message success">{{ success }}</div>
     </div>
 
-    <div v-if="loading" class="loading">Loading categories...</div>
+    <div v-if="loading" class="grid categories-skeleton" aria-hidden="true">
+      <div v-for="n in 8" :key="`skeleton-${n}`" class="card skeleton-card">
+        <div class="card-image">
+          <div class="skeleton skeleton-media"></div>
+        </div>
+        <div class="card-body">
+          <div class="skeleton skeleton-line" style="width: 60%"></div>
+          <div class="skeleton skeleton-line" style="width: 40%"></div>
+        </div>
+      </div>
+    </div>
     <div v-else-if="filteredCategories.length === 0" class="empty">
       {{ hasSearch ? 'No categories found.' : 'No categories found. Add your first one above.' }}
     </div>
@@ -75,6 +89,8 @@
           <img
             :src="getImageUrl(cat.img)"
             :alt="cat.title || 'Category'"
+            loading="lazy"
+            decoding="async"
             @error="onImageError"
           />
         </div>
@@ -95,6 +111,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
 import { useAuthStore } from '../stores/auth'
+import Icon from '../components/Icon.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -446,6 +463,28 @@ async function deleteCategory(cat) {
 .card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow);
+}
+
+.categories-skeleton .card {
+  animation: none;
+  cursor: default;
+}
+
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton-card .card-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.skeleton-media {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
 }
 
 .card-image {

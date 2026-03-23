@@ -41,6 +41,14 @@ const icons = {
     viewBox: '0 0 24 24',
     paths: ['M6 9l6 6 6-6']
   },
+  'arrow-up': {
+    viewBox: '0 0 24 24',
+    paths: ['M12 19V5', 'M5 12l7-7 7 7']
+  },
+  refresh: {
+    viewBox: '0 0 24 24',
+    paths: ['M23 4v6h-6', 'M1 20v-6h6', 'M3.5 9a9 9 0 0 1 14.1-3.6L23 10', 'M1 14l5.4 4.6A9 9 0 0 0 20.5 15']
+  },
   logout: {
     viewBox: '0 0 24 24',
     paths: ['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4', 'M16 17l5-5-5-5', 'M21 12H9']

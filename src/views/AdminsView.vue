@@ -17,6 +17,10 @@
             type="search"
             placeholder="Search admins..."
           />
+          <button class="btn-outline" :disabled="loading" @click="fetchAdmins">
+            <Icon name="refresh" :size="16" />
+            Yangilash
+          </button>
           <button class="add-btn" @click="goToCreate">
             <span class="plus">+</span> Add New
           </button>
@@ -29,7 +33,30 @@
         </button>
       </div>
 
-      <div v-if="loading" class="loading">Loading...</div>
+      <div v-if="loading" class="table-container table-skeleton" aria-hidden="true">
+        <table class="admins-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>USERNAME</th>
+              <th>EMAIL</th>
+              <th>PHONE</th>
+              <th>STATUS</th>
+              <th>CREATE DATE</th>
+              <th>UPDATE DATE</th>
+              <th>ROLE</th>
+              <th>MODIFY</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="n in 8" :key="`skeleton-${n}`">
+              <td v-for="c in skeletonCols" :key="c">
+                <div class="skeleton skeleton-line"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div v-else-if="filteredAdmins.length === 0" class="no-data">No admins found</div>
 
@@ -118,11 +145,13 @@
 import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../services/api';
+import Icon from '../components/Icon.vue';
 
 const admins = ref([]);
 const loading = ref(true);
 const router = useRouter();
 const search = ref('');
+const skeletonCols = 9;
 
 const showDeleteModal = ref(false);
 const selectedAdminId = ref(null);
@@ -134,6 +163,11 @@ const toast = ref({
 });
 
 onMounted(async () => {
+  await fetchAdmins();
+});
+
+async function fetchAdmins() {
+  loading.value = true;
   try {
     const res = await api.get('/api/admins?page=1&limit=1000');
     if (res.data.success && res.data.data?.admins) {
@@ -144,7 +178,7 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
 
 const filteredAdmins = computed(() => {
   const query = search.value.trim().toLowerCase();
@@ -552,6 +586,10 @@ function showToast(message, type = 'success') {
   -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border);
+}
+
+.table-skeleton .skeleton-line {
+  height: 12px;
 }
 
 .admins-table {

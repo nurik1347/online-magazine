@@ -54,6 +54,10 @@ const pageSubtitle = computed(() => {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://student.jamshidibodullayev.uz';
 
 watch(categoryId, async () => {
+  fetchProducts()
+}, { immediate: true });
+
+async function fetchProducts() {
   loading.value = true;
   try {
     const endpoint = categoryId.value
@@ -76,7 +80,7 @@ watch(categoryId, async () => {
   } finally {
     loading.value = false;
   }
-}, { immediate: true });
+}
 
 function goToAddProduct() {
   router.push('/products/add');
@@ -125,6 +129,42 @@ function getImageUrl(image) {
 
   return `${API_BASE_URL}/uploads/${image}`;
 }
+
+function csvEscape(value) {
+  const str = (value ?? '').toString()
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+  return str
+}
+
+function exportProducts() {
+  if (!filteredProducts.value.length) return
+
+  const headers = ['Title', 'Brand', 'Price', 'Currency', 'Old Price', 'Stock', 'Description']
+  const rows = filteredProducts.value.map(product => [
+    product.title,
+    product.brand,
+    product.price,
+    product.currency,
+    product.oldPrice,
+    product.stock,
+    product.description
+  ])
+
+  const csv = [
+    headers.join(','),
+    ...rows.map(row => row.map(csvEscape).join(','))
+  ].join('\n')
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `products_${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -154,6 +194,18 @@ function getImageUrl(image) {
           type="search"
           placeholder="Search products..."
         />
+        <button class="btn-outline" :disabled="loading" @click="fetchProducts">
+          <Icon name="refresh" :size="16" />
+          Yangilash
+        </button>
+        <button
+          v-if="isAdmin && filteredProducts.length"
+          class="btn-export"
+          @click="exportProducts"
+        >
+          <i class="bi bi-download"></i>
+          CSV
+        </button>
         <button v-if="isAdmin" class="btn-add-product" @click="goToAddProduct">
           <i class="bi bi-plus-circle"></i>
           Yangi Mahsulot
@@ -161,11 +213,19 @@ function getImageUrl(image) {
       </div>
     </div>
 
-    <div v-if="loading" class="loading-wrapper">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Yuklanmoqda...</span>
+    <div v-if="loading" class="products-grid products-skeleton" aria-hidden="true">
+      <div v-for="n in 8" :key="`skeleton-${n}`" class="product-card skeleton-card">
+        <div class="card-image">
+          <div class="skeleton skeleton-media"></div>
+        </div>
+        <div class="card-body">
+          <div class="skeleton skeleton-line" style="width: 40%"></div>
+          <div class="skeleton skeleton-line" style="width: 70%"></div>
+          <div class="skeleton skeleton-line" style="width: 90%"></div>
+          <div class="skeleton skeleton-line" style="width: 55%"></div>
+          <div class="skeleton skeleton-line" style="width: 65%"></div>
+        </div>
       </div>
-      <p class="loading-text">Mahsulotlar yuklanmoqda...</p>
     </div>
 
     <div v-else-if="filteredProducts.length > 0" class="products-grid">
@@ -175,12 +235,16 @@ function getImageUrl(image) {
             :loop="product.images?.length > 1" navigation pagination class="product-swiper">
             <SwiperSlide v-for="(image, index) in product.images || []" :key="index">
               <img :src="getImageUrl(image)" :alt="`${product.title || 'Mahsulot'} - ${index + 1}`" class="swiper-image"
+                loading="lazy"
+                decoding="async"
                 @error="$event.target.src = 'https://via.placeholder.com/300x300?text=No+Image'" />
             </SwiperSlide>
 
             <SwiperSlide v-if="!(product.images?.length)">
               <img src="https://via.placeholder.com/300x300?text=No+Image" alt="Rasm mavjud emas"
-                class="swiper-image" />
+                class="swiper-image"
+                loading="lazy"
+                decoding="async" />
             </SwiperSlide>
           </Swiper>
 
@@ -335,6 +399,27 @@ function getImageUrl(image) {
   box-shadow: 0 14px 28px rgba(228, 61, 64, 0.35);
 }
 
+.btn-export {
+  background: var(--surface-strong);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.8rem 1.2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-export:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-2px);
+}
+
 .loading-wrapper {
   text-align: center;
   padding: 6rem 0;
@@ -367,6 +452,27 @@ function getImageUrl(image) {
 .product-card:hover {
   transform: translateY(-10px);
   box-shadow: var(--shadow);
+}
+
+.products-skeleton .product-card {
+  animation: none;
+}
+
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton-card .card-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.skeleton-media {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
 }
 
 .card-image {
@@ -697,6 +803,11 @@ function getImageUrl(image) {
   }
 
   .btn-add-product {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-export {
     width: 100%;
     justify-content: center;
   }

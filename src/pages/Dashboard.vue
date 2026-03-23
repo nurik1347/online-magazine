@@ -37,6 +37,16 @@
             <div class="label">Total Products</div>
           </div>
         </div>
+
+        <div class="stat-card" data-tone="warning" @click="goToCategories">
+          <div class="card-icon-wrapper">
+            <Icon name="categories" :size="32" />
+          </div>
+          <div class="card-bottom">
+            <div class="count">{{ stats.totalCategories }}</div>
+            <div class="label">Total Categories</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -56,7 +66,8 @@ const isAdmin = computed(() => authStore.isAdmin)
 const stats = ref({
   totalAdmins: 0,
   totalUsers: 0,
-  totalProducts: 0
+  totalProducts: 0,
+  totalCategories: 0
 })
 
 const fetchStats = async (includeAdmins = false) => {
@@ -76,6 +87,18 @@ const fetchStats = async (includeAdmins = false) => {
     const productsRes = await api.get('/api/products?page=1&limit=1000')
     if (productsRes.data.success && productsRes.data.data.products) {
       stats.value.totalProducts = productsRes.data.data.products.length
+    }
+
+    const categoriesRes = await api.get('/api/categories')
+    const categoriesData = categoriesRes.data?.data
+    if (Array.isArray(categoriesData?.categories)) {
+      stats.value.totalCategories = categoriesData.categories.length
+    } else if (Array.isArray(categoriesData)) {
+      stats.value.totalCategories = categoriesData.length
+    } else if (Array.isArray(categoriesRes.data?.categories)) {
+      stats.value.totalCategories = categoriesRes.data.categories.length
+    } else {
+      stats.value.totalCategories = 0
     }
   } catch (err) {
     console.error('Dashboard stats yuklanmadi:', err)
@@ -100,6 +123,10 @@ const goToUsers = () => {
 
 const goToProducts = () => {
   router.push('/products')
+}
+
+const goToCategories = () => {
+  router.push('/categories')
 }
 </script>
 
@@ -179,6 +206,11 @@ const goToProducts = () => {
   color: #0d6efd;
 }
 
+.stat-card[data-tone="warning"] .card-icon-wrapper {
+  background: rgba(245, 159, 0, 0.16);
+  color: var(--accent-2);
+}
+
 .card-bottom {
   padding: 16px 20px;
   text-align: center;
@@ -205,5 +237,9 @@ const goToProducts = () => {
 
 .stat-card:nth-child(3) {
   animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(4) {
+  animation-delay: 0.15s;
 }
 </style>
