@@ -136,9 +136,16 @@ router.beforeEach(async (to, from, next) => {
     }
 
     const isAuthenticated = authStore.isAuthenticated
+    const isLoginRoute = to.name === 'Login'
 
-    if (to.meta.requiresAuth && !isAuthenticated) {
+    // Login bo'lmaguncha faqat login route ochiladi.
+    if (!isAuthenticated && !isLoginRoute) {
         next({ name: 'Login', query: { redirect: to.fullPath } })
+        return
+    }
+
+    if (isAuthenticated && isLoginRoute) {
+        next({ name: 'Dashboard' })
         return
     }
 

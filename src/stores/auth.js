@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', {
     }),
 
     getters: {
-        isAuthenticated: (state) => !!state.accessToken,
+        isAuthenticated: (state) => !!(state.accessToken && state.userId && state.user),
         getUser: (state) => state.user,
         isAdmin: (state) => {
             const role = (state.user?.role || state.role || '').toString().toLowerCase()
@@ -97,7 +97,9 @@ export const useAuthStore = defineStore('auth', {
             }
         },
         async fetchUser() {
-            if (!this.accessToken || !this.userId) return
+            if (!this.accessToken || !this.userId) {
+                throw new Error('Missing auth context')
+            }
 
             try {
                 const res = await axios.get(`${API_URl}/api/users/${this.userId}`, {
@@ -113,6 +115,7 @@ export const useAuthStore = defineStore('auth', {
                 }
             } catch (err) {
                 console.warn('User fetch failed', err)
+                throw err
             }
         },
 
@@ -140,7 +143,8 @@ export const useAuthStore = defineStore('auth', {
 
                 if (res.data.success && res.data.data?.tokens) {
                     const { accessToken, refreshToken } = res.data.data.tokens
-                    this.setTokens(accessToken, refreshToken)
+                    const uid = res.data.data.user?.id || this.userId
+                    this.setTokens(accessToken, refreshToken, uid)
                     return accessToken
                 }
             } catch (err) {
